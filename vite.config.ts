@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { resolve } from 'path';
 
 export default defineConfig({
     root: '.',
@@ -7,6 +8,10 @@ export default defineConfig({
         outDir: 'dist',
         target: 'es2022',
         rollupOptions: {
+            input: {
+                main: resolve(__dirname, 'index.html'),
+                vsti: resolve(__dirname, 'vsti.html'),
+            },
             output: {
                 manualChunks: {
                     'monaco-editor': ['monaco-editor'],
