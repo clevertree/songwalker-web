@@ -587,6 +587,7 @@ async function main() {
     const exportBtn = document.getElementById('export-btn')!;
     const fullscreenBtn = document.getElementById('fullscreen-btn')!;
     const presetBtn = document.getElementById('preset-btn')!;
+    const songSelect = document.getElementById('song-select') as HTMLSelectElement;
     const statusEl = document.getElementById('status')!;
     const errorEl = document.getElementById('error')!;
 
@@ -627,6 +628,33 @@ async function main() {
             showErrorLocation(editor, msg);
         }
     }
+
+    // Load example song from public/songs/
+    async function loadExampleSong(slug: string) {
+        try {
+            statusEl.textContent = `Loading ${slug}…`;
+            const resp = await fetch(`/songs/${slug}.sw`);
+            if (!resp.ok) throw new Error(`Failed to load ${slug}: ${resp.status}`);
+            const source = await resp.text();
+            editor.setValue(source);
+            saveSource(source);
+            statusEl.textContent = 'Ready';
+            errorEl.textContent = '';
+            clearErrorMarkers(editor);
+        } catch (e: any) {
+            statusEl.textContent = 'Ready';
+            errorEl.textContent = String(e);
+        }
+    }
+
+    // Song selector
+    songSelect.addEventListener('change', () => {
+        const slug = songSelect.value;
+        if (slug) {
+            loadExampleSong(slug);
+            songSelect.value = ''; // reset so user can re-select same song
+        }
+    });
 
     // Export as WAV
     function exportWav() {

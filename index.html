@@ -102,6 +102,31 @@
             transform: scale(0.97);
         }
 
+        select {
+            background: var(--surface);
+            color: var(--text);
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.6rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            outline: none;
+            font-family: inherit;
+        }
+
+        select:hover {
+            background: var(--border);
+        }
+
+        select:focus {
+            border-color: var(--accent);
+        }
+
+        select option {
+            background: var(--surface);
+            color: var(--text);
+        }
+
         button.primary {
             background: var(--accent);
             color: var(--bg);
@@ -406,6 +431,22 @@
     <div class="toolbar">
         <button id="play-btn" class="primary" title="Play (Ctrl+Enter)">&#9654; Play</button>
         <button id="stop-btn" class="danger" title="Stop">&#9632; Stop</button>
+        <span class="separator"></span>
+        <select id="song-select" title="Load an example song">
+            <option value="">— Examples —</option>
+            <option value="synth-waves">🎹 Synth Waves</option>
+            <option value="chiptune-march">🕹️ Chiptune March</option>
+            <option value="piano-ballad">🎵 Piano Ballad</option>
+            <option value="rock-beat">🎸 Rock Beat</option>
+            <option value="jazz-cafe">☕ Jazz Café</option>
+            <option value="funk-slap">🎶 Funk Slap</option>
+            <option value="latin-groove">💃 Latin Groove</option>
+            <option value="orchestral-sketch">🎻 Orchestral Sketch</option>
+            <option value="harp-and-strings">🎼 Harp &amp; Strings</option>
+            <option value="ambient-drift">🌊 Ambient Drift</option>
+            <option value="432hz-meditation">🧘 432 Hz Meditation</option>
+            <option value="composite-demo">🔀 Composite Demo</option>
+        </select>
         <span class="separator"></span>
         <span id="status">Ready</span>
         <span class="spacer"></span>
