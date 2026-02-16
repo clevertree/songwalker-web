@@ -9,8 +9,8 @@
  * - Click-to-insert into editor
  */
 
-import type { PresetEntry, PresetCategory } from './preset-types.js';
-import { PresetLoader, type LibraryInfo } from './preset-loader.js';
+import type { PresetEntry, PresetCategory } from 'songwalker-js';
+import { PresetLoader, type LibraryInfo } from 'songwalker-js';
 
 // ── Category Colours ─────────────────────────────────────
 

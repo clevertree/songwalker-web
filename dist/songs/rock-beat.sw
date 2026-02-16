@@ -12,12 +12,13 @@ track beat(kit) {
     track.instrument = kit
     track.duration = 1/4
 
+    // C2=Kick, F#2=HiHat, D2=Snare (GM drum map)
     for (let i = 0; i < 4; i++) {
         // Standard rock pattern
-        Kick *0.9           HiHat *0.5  /2
-        HiHat *0.5          Snare *0.8  /2
-        Kick *0.9           HiHat *0.5  /2
-        HiHat *0.5          Snare *0.8  /2
+        C2 *0.9           F#2 *0.5  /2
+        F#2 *0.5          D2 *0.8  /2
+        C2 *0.9           F#2 *0.5  /2
+        F#2 *0.5          D2 *0.8  /2
     }
 }
 

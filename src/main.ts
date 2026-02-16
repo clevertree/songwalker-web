@@ -1,15 +1,13 @@
-import init, { compile_song, core_version } from './wasm/songwalker_core.js';
-import { SongPlayer } from './player.js';
-import { PresetLoader } from './preset-loader.js';
-import { PresetBrowser } from './preset-browser.js';
-import * as monaco from 'monaco-editor';
+import { initWasm, compile_song, core_version, SongPlayer, PresetLoader } from 'songwalker-js';
 import {
     LANGUAGE_ID,
     languageConfig,
     monarchTokens,
     editorTheme,
     completionItems,
-} from './sw-language.js';
+} from 'songwalker-js/monaco';
+import { PresetBrowser } from './preset-browser.js';
+import * as monaco from 'monaco-editor';
 
 // ── Types ────────────────────────────────────────────────
 
@@ -522,7 +520,7 @@ class NoteHighlighter {
 // ── App ──────────────────────────────────────────────────
 
 async function main() {
-    await init();
+    await initWasm();
 
     // Display core version in the status bar (bottom right)
     const statusVersionEl = document.getElementById('status-version');

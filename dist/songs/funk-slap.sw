@@ -37,7 +37,8 @@ track groove(kit) {
     track.instrument = kit
     track.duration = 1/8
 
+    // C2=Kick, F#2=HiHat, D2=Snare (GM drum map)
     for (let i = 0; i < 4; i++) {
-        Kick HiHat . HiHat Snare HiHat . HiHat
+        C2 F#2 . F#2 D2 F#2 . F#2
     }
 }
