@@ -89,6 +89,7 @@ export class PresetBrowser {
 
     private async loadRootIndex(): Promise<void> {
         this.statusEl.textContent = 'Loading index…';
+        this.statusEl.className = 'pb-status';
         try {
             await this.loader.loadRootIndex();
             this.libraries = this.loader.getAvailableLibraries();
@@ -103,8 +104,25 @@ export class PresetBrowser {
                 await this.toggleLibrary(this.libraries[0].name, true);
             }
         } catch (err) {
-            this.statusEl.textContent = `Error: ${err instanceof Error ? err.message : String(err)}`;
+            const msg = err instanceof Error ? err.message : String(err);
+            this.statusEl.textContent = `\u26A0 ${msg}`;
+            this.statusEl.className = 'pb-status pb-status-error';
+            this.showError(msg);
         }
+    }
+
+    private showError(msg: string): void {
+        this.listEl.innerHTML = `
+            <div class="pb-error">
+                <div class="pb-error-icon">\u26A0</div>
+                <div class="pb-error-msg">${escapeHtml(msg)}</div>
+                <button class="pb-error-retry">Retry</button>
+            </div>
+        `;
+        this.listEl.querySelector('.pb-error-retry')?.addEventListener('click', () => {
+            this.libraries = [];
+            this.loadRootIndex();
+        });
     }
 
     private renderLibraryChips(): void {
@@ -219,6 +237,10 @@ export class PresetBrowser {
 
     private bindEvents(): void {
         this.searchInput.addEventListener('input', () => this.applyFilter());
+
+        // Close button
+        const closeBtn = this.container.querySelector('.pb-close');
+        closeBtn?.addEventListener('click', () => this.close());
 
         // Category filter chips
         const chips = this.container.querySelectorAll<HTMLElement>('.pb-chip');
@@ -422,6 +444,38 @@ export class PresetBrowser {
     font-size: 0.7rem;
     color: var(--subtext, #a6adc8);
     border-top: 1px solid var(--border, #313244);
+}
+.pb-status-error {
+    color: #f38ba8;
+}
+.pb-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 2rem 1rem;
+    text-align: center;
+}
+.pb-error-icon {
+    font-size: 2rem;
+}
+.pb-error-msg {
+    font-size: 0.8rem;
+    color: #f38ba8;
+    word-break: break-word;
+}
+.pb-error-retry {
+    padding: 4px 12px;
+    border-radius: 4px;
+    border: 1px solid var(--accent, #89b4fa);
+    background: transparent;
+    color: var(--accent, #89b4fa);
+    cursor: pointer;
+    font-size: 0.75rem;
+}
+.pb-error-retry:hover {
+    background: var(--accent, #89b4fa);
+    color: var(--bg, #1e1e2e);
 }
         `;
         document.head.appendChild(style);
