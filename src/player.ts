@@ -6,7 +6,7 @@
  * Routes through an AnalyserNode for real-time visualisation.
  */
 
-import { render_song_samples, render_song_wav } from './wasm/songwalker_core.js';
+import { render_song_samples, render_song_samples_with_presets, render_song_wav, render_song_wav_with_presets } from './wasm/songwalker_core.js';
 
 // ── Player State ───────────────────────────────────────────
 
@@ -57,8 +57,10 @@ export class SongPlayer {
         return this.SAMPLE_RATE;
     }
 
-    /** Compile, render, and play the song from source code. */
-    async playSource(source: string): Promise<void> {
+    /** Compile, render, and play the song from source code.
+     *  If presetsJson is provided, sampler presets will be used for rendering.
+     */
+    async playSource(source: string, presetsJson?: string): Promise<void> {
         this.stop();
 
         if (!this.ctx) {
@@ -75,8 +77,10 @@ export class SongPlayer {
             await this.ctx.resume();
         }
 
-        // Render audio via Rust DSP engine
-        const samples = render_song_samples(source, this.SAMPLE_RATE);
+        // Render audio via Rust DSP engine — with or without presets
+        const samples = presetsJson
+            ? render_song_samples_with_presets(source, this.SAMPLE_RATE, presetsJson)
+            : render_song_samples(source, this.SAMPLE_RATE);
         this.renderedSamples = samples;
         if (samples.length === 0) {
             this.emitState();
@@ -125,8 +129,10 @@ export class SongPlayer {
     }
 
     /** Export the current song as a WAV file download. */
-    exportWav(source: string, filename = 'song.wav'): void {
-        const wavBytes = render_song_wav(source, this.SAMPLE_RATE);
+    exportWav(source: string, filename = 'song.wav', presetsJson?: string): void {
+        const wavBytes = presetsJson
+            ? render_song_wav_with_presets(source, this.SAMPLE_RATE, presetsJson)
+            : render_song_wav(source, this.SAMPLE_RATE);
         const blob = new Blob([wavBytes], { type: 'audio/wav' });
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');

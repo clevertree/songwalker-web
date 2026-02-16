@@ -19,9 +19,24 @@ export function core_version(): string;
 export function render_song_samples(source: string, sample_rate: number): Float32Array;
 
 /**
+ * WASM-exposed: compile and render `.sw` source to mono f32 samples
+ * with loaded preset data for sampler-based instruments.
+ *
+ * `presets_json` is a JSON array of `WasmLoadedPreset` objects, each
+ * containing the preset name and pre-decoded PCM zone data.
+ */
+export function render_song_samples_with_presets(source: string, sample_rate: number, presets_json: string): Float32Array;
+
+/**
  * WASM-exposed: compile and render `.sw` source to a WAV byte array.
  */
 export function render_song_wav(source: string, sample_rate: number): Uint8Array;
+
+/**
+ * WASM-exposed: compile and render `.sw` source to a WAV byte array
+ * with loaded preset data for sampler-based instruments.
+ */
+export function render_song_wav_with_presets(source: string, sample_rate: number, presets_json: string): Uint8Array;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
 
@@ -30,7 +45,9 @@ export interface InitOutput {
     readonly compile_song: (a: number, b: number) => [number, number, number];
     readonly core_version: () => [number, number];
     readonly render_song_samples: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly render_song_samples_with_presets: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly render_song_wav: (a: number, b: number, c: number) => [number, number, number, number];
+    readonly render_song_wav_with_presets: (a: number, b: number, c: number, d: number, e: number) => [number, number, number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;

@@ -524,9 +524,9 @@ class NoteHighlighter {
 async function main() {
     await init();
 
-    // Display core version from WASM
-    const versionEl = document.querySelector('.version');
-    if (versionEl) versionEl.textContent = `core v${core_version()}`;
+    // Display core version in the status bar (bottom right)
+    const statusVersionEl = document.getElementById('status-version');
+    if (statusVersionEl) statusVersionEl.textContent = `core v${core_version()}`;
 
     const player = new SongPlayer();
 
@@ -593,7 +593,39 @@ async function main() {
     const presetBtn = document.getElementById('preset-btn')!;
     const songSelect = document.getElementById('song-select') as HTMLSelectElement;
     const statusEl = document.getElementById('status')!;
-    const errorEl = document.getElementById('error')!;
+    const statusErrorsEl = document.getElementById('status-errors')!;
+    const statusWarningsEl = document.getElementById('status-warnings')!;
+
+    /** Clear all status bar errors/warnings and Monaco markers. */
+    function clearStatusErrors() {
+        statusErrorsEl.textContent = '';
+        statusWarningsEl.textContent = '';
+        clearErrorMarkers(editor);
+    }
+
+    /** Show an error in the status bar (bottom left) and highlight the source location. */
+    function showStatusError(msg: string) {
+        statusErrorsEl.textContent = msg;
+        showErrorLocation(editor, msg);
+    }
+
+    /** Show a warning in the status bar (bottom left). */
+    function showStatusWarning(msg: string) {
+        statusWarningsEl.textContent = msg;
+    }
+
+    /** Extract preset ref names from a compiled event list. */
+    function extractPresetRefs(eventList: any): string[] {
+        const events = eventList?.events ?? [];
+        const refs: string[] = [];
+        for (const evt of events) {
+            if (evt.kind?.PresetRef?.name) {
+                const name = evt.kind.PresetRef.name;
+                if (!refs.includes(name)) refs.push(name);
+            }
+        }
+        return refs;
+    }
 
     // Preset browser
     const presetLoader = new PresetLoader('https://clevertree.github.io/songwalker-library');
@@ -612,24 +644,102 @@ async function main() {
     });
 
     // Compile and play using Rust DSP engine
-    function compileAndPlay() {
-        errorEl.textContent = '';
-        clearErrorMarkers(editor);
+    async function compileAndPlay() {
+        clearStatusErrors();
         try {
             const source = editor.getValue();
             // Compile to get event list (for highlighting)
             const eventList = compile_song(source);
             highlighter.setEvents(eventList);
+
+            // Check for preset references that need loading
+            const presetRefs = extractPresetRefs(eventList);
+            let presetsJson: string | undefined;
+
+            if (presetRefs.length > 0) {
+                try {
+                    showStatusWarning(`Loading ${presetRefs.length} preset(s)…`);
+
+                    // Ensure the preset loader has an AudioContext for decoding
+                    if (!presetLoader.hasAudioContext) {
+                        const ctx = new AudioContext({ sampleRate: 44100 });
+                        presetLoader.setAudioContext(ctx);
+                    }
+
+                    // Preload all referenced presets (fetches + decodes audio)
+                    await presetLoader.preloadAll(presetRefs);
+
+                    // Build WASM-compatible preset data array
+                    const wasmPresets: any[] = [];
+                    for (const refName of presetRefs) {
+                        try {
+                            const preset = await presetLoader.loadPreset(refName);
+                            if (preset.node?.type === 'sampler' && preset.node.config) {
+                                const samplerConfig = preset.node.config;
+                                // Find the preset entry and its URL for audio resolution
+                                const entry = presetLoader.search({ name: refName })[0];
+                                const libraryName = entry ? presetLoader.findLibraryForEntry(entry) : undefined;
+                                const presetUrl = entry ? presetLoader.resolvePresetUrl(entry.path, libraryName) : undefined;
+
+                                // Decode all zones and extract mono f32 PCM
+                                const decodedZones = await presetLoader.decodeSamplerZones(
+                                    samplerConfig,
+                                    presetUrl,
+                                );
+
+                                const zones: any[] = [];
+                                for (const zone of samplerConfig.zones) {
+                                    const audioBuffer = decodedZones.get(zone);
+                                    if (!audioBuffer) continue;
+
+                                    // Extract mono f32 channel data
+                                    const channelData = audioBuffer.getChannelData(0);
+                                    zones.push({
+                                        keyRangeLow: zone.keyRange?.low ?? 0,
+                                        keyRangeHigh: zone.keyRange?.high ?? 127,
+                                        rootNote: zone.pitch.rootNote,
+                                        fineTuneCents: zone.pitch.fineTuneCents,
+                                        sampleRate: zone.sampleRate,
+                                        loopStart: zone.loopPoints?.start ?? null,
+                                        loopEnd: zone.loopPoints?.end ?? null,
+                                        samples: Array.from(channelData),
+                                    });
+                                }
+
+                                wasmPresets.push({
+                                    name: refName,
+                                    isDrumKit: samplerConfig.oneShot ?? false,
+                                    zones,
+                                });
+                            }
+                        } catch (err) {
+                            console.warn(`[Player] Failed to load preset "${refName}":`, err);
+                        }
+                    }
+
+                    if (wasmPresets.length > 0) {
+                        presetsJson = JSON.stringify(wasmPresets);
+                        showStatusWarning(`Loaded ${wasmPresets.length} preset(s)`);
+                    } else {
+                        showStatusWarning('');
+                    }
+                } catch (err) {
+                    console.warn('[Player] Preset loading failed, falling back to oscillators:', err);
+                    showStatusWarning(
+                        `\u26A0 Preset loading failed: ${err}. Using default oscillator.`
+                    );
+                }
+            }
+
             // Render and play via Rust DSP
-            player.playSource(source).then(() => {
+            player.playSource(source, presetsJson).then(() => {
                 visualiser.drawWaveformOverview();
                 visualiser.start();
                 highlighter.start();
             });
         } catch (e: any) {
             const msg = String(e);
-            errorEl.textContent = msg;
-            showErrorLocation(editor, msg);
+            showStatusError(msg);
         }
     }
 
@@ -643,11 +753,10 @@ async function main() {
             editor.setValue(source);
             saveSource(source);
             statusEl.textContent = 'Ready';
-            errorEl.textContent = '';
-            clearErrorMarkers(editor);
+            clearStatusErrors();
         } catch (e: any) {
             statusEl.textContent = 'Ready';
-            errorEl.textContent = String(e);
+            showStatusError(String(e));
         }
     }
 
@@ -662,16 +771,14 @@ async function main() {
 
     // Export as WAV
     function exportWav() {
-        errorEl.textContent = '';
-        clearErrorMarkers(editor);
+        clearStatusErrors();
         try {
             const source = editor.getValue();
             compile_song(source); // validate first
             player.exportWav(source);
         } catch (e: any) {
             const msg = String(e);
-            errorEl.textContent = msg;
-            showErrorLocation(editor, msg);
+            showStatusError(msg);
         }
     }
 

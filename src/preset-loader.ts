@@ -122,7 +122,7 @@ export class PresetLoader {
 
     private presetCache: LRUCache<string, PresetDescriptor>;
     private audioCache: LRUCache<string, AudioBuffer>;
-    private audioContext: AudioContext | null = null;
+    private _audioContext: AudioContext | null = null;
 
     constructor(baseUrl: string, options?: { presetCacheSize?: number; audioCacheSize?: number }) {
         this.baseUrl = baseUrl.replace(/\/+$/, '');
@@ -130,9 +130,14 @@ export class PresetLoader {
         this.audioCache = new LRUCache(options?.audioCacheSize ?? 128);
     }
 
+    /** Whether an AudioContext has been set for audio decoding. */
+    get hasAudioContext(): boolean {
+        return this._audioContext !== null;
+    }
+
     /** Set the AudioContext used for decoding audio data. */
     setAudioContext(ctx: AudioContext): void {
-        this.audioContext = ctx;
+        this._audioContext = ctx;
     }
 
     // ── Root Index ───────────────────────────────────────
@@ -382,7 +387,7 @@ export class PresetLoader {
 
     /** Load a preset by its catalog path, resolved relative to a library. */
     async loadPresetByPath(path: string, libraryName?: string): Promise<PresetDescriptor> {
-        const fullUrl = this._resolvePresetUrl(path, libraryName);
+        const fullUrl = this.resolvePresetUrl(path, libraryName);
         return this._fetchPreset(fullUrl, path);
     }
 
@@ -398,13 +403,13 @@ export class PresetLoader {
     /** Internal: load a preset entry, resolving its URL from its source library. */
     private async _loadPresetEntry(entry: PresetEntry, libraryHint?: string): Promise<PresetDescriptor> {
         // Find which library this entry belongs to
-        const libraryName = libraryHint ?? this._findLibraryForEntry(entry);
-        const fullUrl = this._resolvePresetUrl(entry.path, libraryName);
+        const libraryName = libraryHint ?? this.findLibraryForEntry(entry);
+        const fullUrl = this.resolvePresetUrl(entry.path, libraryName);
         return this._fetchPreset(fullUrl, entry.path);
     }
 
     /** Find which loaded library contains a given entry. */
-    private _findLibraryForEntry(entry: PresetEntry): string | undefined {
+    findLibraryForEntry(entry: PresetEntry): string | undefined {
         for (const [libraryName, { index }] of this.loadedLibraries) {
             if (index.entries.some(e => e === entry)) {
                 return libraryName;
@@ -414,7 +419,7 @@ export class PresetLoader {
     }
 
     /** Resolve a preset path to a full URL using the library's base URL. */
-    private _resolvePresetUrl(path: string, libraryName?: string): string {
+    resolvePresetUrl(path: string, libraryName?: string): string {
         if (libraryName) {
             const lib = this.loadedLibraries.get(libraryName);
             if (lib) {
@@ -446,7 +451,7 @@ export class PresetLoader {
      * Requires an AudioContext to be set via setAudioContext().
      */
     async decodeAudio(ref_: AudioReference, presetUrl?: string): Promise<AudioBuffer> {
-        const ctx = this.audioContext;
+        const ctx = this._audioContext;
         if (!ctx) {
             throw new Error('AudioContext not set. Call setAudioContext() first.');
         }
@@ -592,8 +597,8 @@ export class PresetLoader {
                 if (preset.node?.type === 'sampler' && preset.node.config) {
                     const entry = this.search({ name })[0];
                     if (entry) {
-                        const libraryName = this._findLibraryForEntry(entry);
-                        const presetUrl = this._resolvePresetUrl(entry.path, libraryName);
+                        const libraryName = this.findLibraryForEntry(entry);
+                        const presetUrl = this.resolvePresetUrl(entry.path, libraryName);
                         await this.decodeSamplerZones(
                             preset.node.config as SamplerConfig,
                             presetUrl,

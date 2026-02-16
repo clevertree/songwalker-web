@@ -1,0 +1,647 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SongWalker VSTi — Plugin Download</title>
+    <meta name="description"
+        content="SongWalker VSTi — A free, open-source VST3/CLAP multi-timbral instrument plugin with remote preset loading and .sw track runner.">
+    <meta name="theme-color" content="#1e1e2e">
+    <meta property="og:title" content="SongWalker VSTi — Plugin Download">
+    <meta property="og:description"
+        content="Free multi-timbral instrument plugin. Load presets from the songwalker-library, run .sw tracks from your DAW. VST3 + CLAP.">
+    <meta property="og:url" content="https://songwalker.net/vsti">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://songwalker.net/vsti">
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --surface: #181825;
+            --overlay: #11111b;
+            --text: #cdd6f4;
+            --subtext: #a6adc8;
+            --accent: #89b4fa;
+            --accent-hover: #74c7ec;
+            --error: #f38ba8;
+            --border: #313244;
+            --green: #a6e3a1;
+            --red: #f38ba8;
+            --mauve: #cba6f7;
+            --peach: #fab387;
+            --teal: #94e2d5;
+            --yellow: #f9e2af;
+            --pink: #f5c2e7;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        header h1 a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        header h1 a:hover {
+            text-decoration: underline;
+        }
+
+        header .subtitle {
+            font-size: 0.85rem;
+            color: var(--subtext);
+        }
+
+        header .spacer {
+            flex: 1;
+        }
+
+        header nav {
+            display: flex;
+            gap: 1rem;
+            font-size: 0.9rem;
+        }
+
+        header nav a {
+            color: var(--subtext);
+            text-decoration: none;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        header nav a:hover {
+            color: var(--text);
+            background: var(--border);
+        }
+
+        header nav a.active {
+            color: var(--accent);
+            background: rgba(137, 180, 250, 0.1);
+        }
+
+        .hero {
+            text-align: center;
+            padding: 3rem 2rem;
+            border-bottom: 1px solid var(--border);
+            background: linear-gradient(180deg, var(--surface), var(--bg));
+        }
+
+        .hero h2 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 0.75rem;
+        }
+
+        .hero h2 span {
+            color: var(--accent);
+        }
+
+        .hero .tagline {
+            font-size: 1.1rem;
+            color: var(--subtext);
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            line-height: 1.6;
+        }
+
+        .hero .badges {
+            display: flex;
+            gap: 0.75rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            border: 1px solid;
+        }
+
+        .badge.vst3 {
+            color: var(--accent);
+            border-color: var(--accent);
+        }
+
+        .badge.clap {
+            color: var(--mauve);
+            border-color: var(--mauve);
+        }
+
+        .badge.foss {
+            color: var(--green);
+            border-color: var(--green);
+        }
+
+        .badge.cross-platform {
+            color: var(--teal);
+            border-color: var(--teal);
+        }
+
+        .content {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2rem;
+            flex: 1;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .section h3 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .section p {
+            color: var(--subtext);
+            line-height: 1.7;
+            margin-bottom: 1rem;
+        }
+
+        /* ── Download Cards ─────────────── */
+        .downloads {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .download-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .download-card:hover {
+            border-color: var(--accent);
+            background: rgba(137, 180, 250, 0.05);
+        }
+
+        .download-card .os-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .download-card h4 {
+            font-size: 1.1rem;
+            color: var(--text);
+            margin-bottom: 0.5rem;
+        }
+
+        .download-card .format {
+            font-size: 0.8rem;
+            color: var(--subtext);
+            margin-bottom: 1rem;
+            font-family: var(--font-mono);
+        }
+
+        .download-card a.btn {
+            display: inline-block;
+            background: var(--accent);
+            color: var(--bg);
+            text-decoration: none;
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.15s ease;
+        }
+
+        .download-card a.btn:hover {
+            background: var(--accent-hover);
+        }
+
+        .download-card a.btn.secondary {
+            background: transparent;
+            color: var(--accent);
+            border: 1px solid var(--accent);
+            margin-top: 0.5rem;
+        }
+
+        .download-card a.btn.secondary:hover {
+            background: rgba(137, 180, 250, 0.1);
+        }
+
+        .download-card .note {
+            font-size: 0.75rem;
+            color: var(--subtext);
+            margin-top: 0.75rem;
+            opacity: 0.7;
+        }
+
+        /* ── Feature Grid ─────────────── */
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .feature {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+        }
+
+        .feature h4 {
+            color: var(--text);
+            font-size: 0.95rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feature p {
+            font-size: 0.85rem;
+            color: var(--subtext);
+            line-height: 1.5;
+            margin: 0;
+        }
+
+        .feature .icon {
+            font-size: 1.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* ── Code Block ─────────────── */
+        pre {
+            background: var(--overlay);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 1rem 1.25rem;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            overflow-x: auto;
+            margin: 1rem 0;
+            color: var(--text);
+        }
+
+        code {
+            font-family: var(--font-mono);
+            background: var(--surface);
+            padding: 0.15rem 0.4rem;
+            border-radius: 3px;
+            font-size: 0.85em;
+        }
+
+        pre code {
+            background: none;
+            padding: 0;
+        }
+
+        /* ── Quick Start Steps ─────────────── */
+        .steps {
+            counter-reset: step;
+            list-style: none;
+            padding: 0;
+        }
+
+        .steps li {
+            counter-increment: step;
+            display: flex;
+            gap: 1rem;
+            align-items: flex-start;
+            margin-bottom: 1.25rem;
+            padding: 1rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+        }
+
+        .steps li::before {
+            content: counter(step);
+            min-width: 2rem;
+            height: 2rem;
+            background: var(--accent);
+            color: var(--bg);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .steps li .step-content h4 {
+            color: var(--text);
+            margin-bottom: 0.25rem;
+        }
+
+        .steps li .step-content p {
+            font-size: 0.85rem;
+            color: var(--subtext);
+            margin: 0;
+        }
+
+        /* ── Footer ─────────────── */
+        .footer {
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border);
+            text-align: center;
+            font-size: 0.8rem;
+            color: var(--subtext);
+        }
+
+        .footer a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .footer a:hover {
+            text-decoration: underline;
+        }
+
+        .donate-link {
+            color: var(--pink);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .donate-link:hover {
+            text-decoration: underline;
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+            }
+
+            header nav {
+                gap: 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .hero h2 {
+                font-size: 1.75rem;
+            }
+
+            .content {
+                padding: 1.5rem 1rem;
+            }
+
+            .downloads {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/">SongWalker</a></h1>
+        <span class="subtitle">VSTi Plugin</span>
+        <span class="spacer"></span>
+        <nav>
+            <a href="/">Editor</a>
+            <a href="/vsti.html" class="active">VSTi Plugin</a>
+            <a href="https://github.com/clevertree/songwalker-vsti" target="_blank" rel="noopener">GitHub</a>
+            <a href="https://github.com/sponsors/clevertree" class="donate-link">♥ Donate</a>
+        </nav>
+    </header>
+
+    <div class="hero">
+        <h2><span>SongWalker</span> VSTi</h2>
+        <p class="tagline">
+            A free, open-source multi-timbral instrument plugin for your DAW.
+            Load presets from the songwalker-library over the internet, write <code>.sw</code> tracks
+            triggered by MIDI, and produce music entirely with open tools.
+        </p>
+        <div class="badges">
+            <span class="badge vst3">VST3</span>
+            <span class="badge clap">CLAP</span>
+            <span class="badge foss">GPL-3.0 FOSS</span>
+            <span class="badge cross-platform">Linux · macOS · Windows</span>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- ── Downloads ─────────────── -->
+        <div class="section">
+            <h3>⬇ Download</h3>
+            <p>
+                SongWalker VSTi is distributed as VST3 and CLAP plugins. It comes pre-configured with
+                the <a href="https://clevertree.github.io/songwalker-library"
+                    style="color: var(--accent)">songwalker-library</a>
+                URL, so it works out of the box with an internet connection — presets are downloaded on demand
+                and cached locally.
+            </p>
+
+            <div class="downloads">
+                <div class="download-card">
+                    <div class="os-icon">🐧</div>
+                    <h4>Linux</h4>
+                    <div class="format">x86_64 · VST3 + CLAP</div>
+                    <a href="https://github.com/clevertree/songwalker-vsti/releases/latest/download/songwalker-linux-x86_64.tar.gz"
+                        class="btn">Download .tar.gz</a>
+                    <p class="note">Requires glibc 2.31+, ALSA or PipeWire</p>
+                </div>
+                <div class="download-card">
+                    <div class="os-icon">🍎</div>
+                    <h4>macOS</h4>
+                    <div class="format">Universal (arm64 + x86_64) · VST3 + CLAP</div>
+                    <a href="https://github.com/clevertree/songwalker-vsti/releases/latest/download/songwalker-macos-universal.tar.gz"
+                        class="btn">Download .tar.gz</a>
+                    <p class="note">macOS 11+ · Not notarized (right-click → Open)</p>
+                </div>
+                <div class="download-card">
+                    <div class="os-icon">🪟</div>
+                    <h4>Windows</h4>
+                    <div class="format">x86_64 · VST3 + CLAP</div>
+                    <a href="https://github.com/clevertree/songwalker-vsti/releases/latest/download/songwalker-windows-x86_64.zip"
+                        class="btn">Download .zip</a>
+                    <p class="note">Windows 10+</p>
+                </div>
+            </div>
+            <p style="margin-top: 1rem;">
+                Or build from source:
+            </p>
+            <pre><code>git clone https://github.com/clevertree/songwalker-vsti.git
+cd songwalker-vsti
+cargo xtask bundle songwalker_vsti --release</code></pre>
+        </div>
+
+        <!-- ── Features ─────────────── -->
+        <div class="section">
+            <h3>✨ Features</h3>
+            <div class="features">
+                <div class="feature">
+                    <div class="icon">🎹</div>
+                    <h4>Multi-Timbral Rack</h4>
+                    <p>Up to 16 independent instrument slots, each with its own MIDI channel, volume, and pan —
+                        Kontakt-style.</p>
+                </div>
+                <div class="feature">
+                    <div class="icon">🌐</div>
+                    <h4>Remote Preset Loading</h4>
+                    <p>Browse and load instruments directly from the songwalker-library. Presets are fetched on demand
+                        and cached to disk.</p>
+                </div>
+                <div class="feature">
+                    <div class="icon">📝</div>
+                    <h4>.sw Track Runner</h4>
+                    <p>Write SongWalker code snippets that execute when triggered by MIDI notes. Transpose, loop, and
+                        layer patterns.</p>
+                </div>
+                <div class="feature">
+                    <div class="icon">⚡</div>
+                    <h4>Zero-Alloc Audio</h4>
+                    <p>All audio buffers are pre-allocated. SIMD-optimized mixing. No heap allocation on the real-time
+                        thread.</p>
+                </div>
+                <div class="feature">
+                    <div class="icon">🎨</div>
+                    <h4>Catppuccin Dark UI</h4>
+                    <p>Beautiful egui interface matching the web editor's Catppuccin Mocha theme. Preset browser, code
+                        editor, and waveform visualizer.</p>
+                </div>
+                <div class="feature">
+                    <div class="icon">🔓</div>
+                    <h4>Free &amp; Open Source</h4>
+                    <p>GPL-3.0 licensed. No dongles, no subscriptions, no telemetry. Sustained by <a
+                            href="https://github.com/sponsors/clevertree" class="donate-link">donations</a>.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Quick Start ─────────────── -->
+        <div class="section">
+            <h3>🚀 Quick Start</h3>
+            <ol class="steps">
+                <li>
+                    <div class="step-content">
+                        <h4>Install the plugin</h4>
+                        <p>Download and extract the archive. Copy <code>SongWalker.vst3</code> and/or
+                            <code>SongWalker.clap</code>
+                            to your DAW's plugin folder.
+                        </p>
+                    </div>
+                </li>
+                <li>
+                    <div class="step-content">
+                        <h4>Load in your DAW</h4>
+                        <p>Scan for new plugins, then add "SongWalker" as an instrument on a MIDI track.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="step-content">
+                        <h4>Browse presets</h4>
+                        <p>Open the plugin editor. The left panel shows the preset browser. Click any instrument
+                            to load it into the active slot — samples are fetched automatically.</p>
+                    </div>
+                </li>
+                <li>
+                    <div class="step-content">
+                        <h4>Play!</h4>
+                        <p>Play MIDI notes through your DAW. Add more slots with "Add Preset Slot" or
+                            "Add Runner Slot" for <code>.sw</code> track execution.</p>
+                    </div>
+                </li>
+            </ol>
+        </div>
+
+        <!-- ── Plugin Paths ─────────────── -->
+        <div class="section">
+            <h3>📂 Plugin Installation Paths</h3>
+            <p>Copy the plugin files to the standard locations for your platform:</p>
+            <pre><code><strong>Linux (VST3):</strong>   ~/.vst3/
+<strong>Linux (CLAP):</strong>   ~/.clap/
+
+<strong>macOS (VST3):</strong>   ~/Library/Audio/Plug-Ins/VST3/
+<strong>macOS (CLAP):</strong>   ~/Library/Audio/Plug-Ins/CLAP/
+
+<strong>Windows (VST3):</strong> C:\Program Files\Common Files\VST3\
+<strong>Windows (CLAP):</strong> C:\Program Files\Common Files\CLAP\</code></pre>
+        </div>
+
+        <!-- ── Runner Mode ─────────────── -->
+        <div class="section">
+            <h3>🎵 Runner Mode — .sw Tracks in Your DAW</h3>
+            <p>
+                Runner slots let you write SongWalker code that executes when triggered by MIDI.
+                Each MIDI note spawns an instance of your code, transposed relative to a root note (default C4).
+            </p>
+            <p>
+                For example, a runner slot with this code:
+            </p>
+            <pre><code>track.instrument = Oscillator({ waveform: "sawtooth" })
+
+C4 /8  D4 /8  E4 /4  G4 /2</code></pre>
+            <p>
+                When you press C4, the pattern plays as written. Press E4, and it transposes up 4 semitones.
+                Hold multiple keys to layer patterns. Release a key to stop that instance.
+            </p>
+        </div>
+
+        <!-- ── Offline Mode ─────────────── -->
+        <div class="section">
+            <h3>📡 Offline &amp; Caching</h3>
+            <p>
+                SongWalker VSTi caches all downloaded presets and samples locally. Once loaded,
+                instruments work fully offline. You can also click "Download for Offline" in the
+                preset browser to pre-cache entire libraries for offline use.
+            </p>
+            <p>
+                Cache location:
+            </p>
+            <pre><code><strong>Linux:</strong>   ~/.cache/songwalker/
+<strong>macOS:</strong>   ~/Library/Caches/org.songwalker.SongWalker/
+<strong>Windows:</strong> %LOCALAPPDATA%\songwalker\SongWalker\cache\</code></pre>
+        </div>
+
+    </div>
+
+    <div class="footer">
+        <a href="https://songwalker.net">songwalker.net</a> &middot;
+        <a href="https://github.com/clevertree/songwalker-vsti">GitHub</a> &middot;
+        <a href="https://github.com/sponsors/clevertree" class="donate-link">♥ Donate</a> &middot;
+        GPL-3.0 &middot; Built with Rust &amp; nih-plug
+    </div>
+</body>
+
+</html>

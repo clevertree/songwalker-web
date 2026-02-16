@@ -25,7 +25,6 @@ export interface PresetMetadata {
     description?: string;
     author?: string;
     license?: string;
-    license?: string;
     gmProgram?: number;
     gmCategory?: string;
     source?: string;

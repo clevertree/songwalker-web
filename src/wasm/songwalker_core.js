@@ -53,6 +53,31 @@ export function render_song_samples(source, sample_rate) {
 }
 
 /**
+ * WASM-exposed: compile and render `.sw` source to mono f32 samples
+ * with loaded preset data for sampler-based instruments.
+ *
+ * `presets_json` is a JSON array of `WasmLoadedPreset` objects, each
+ * containing the preset name and pre-decoded PCM zone data.
+ * @param {string} source
+ * @param {number} sample_rate
+ * @param {string} presets_json
+ * @returns {Float32Array}
+ */
+export function render_song_samples_with_presets(source, sample_rate, presets_json) {
+    const ptr0 = passStringToWasm0(source, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(presets_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.render_song_samples_with_presets(ptr0, len0, sample_rate, ptr1, len1);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v3 = getArrayF32FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 4, 4);
+    return v3;
+}
+
+/**
  * WASM-exposed: compile and render `.sw` source to a WAV byte array.
  * @param {string} source
  * @param {number} sample_rate
@@ -68,6 +93,28 @@ export function render_song_wav(source, sample_rate) {
     var v2 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
     wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
     return v2;
+}
+
+/**
+ * WASM-exposed: compile and render `.sw` source to a WAV byte array
+ * with loaded preset data for sampler-based instruments.
+ * @param {string} source
+ * @param {number} sample_rate
+ * @param {string} presets_json
+ * @returns {Uint8Array}
+ */
+export function render_song_wav_with_presets(source, sample_rate, presets_json) {
+    const ptr0 = passStringToWasm0(source, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len0 = WASM_VECTOR_LEN;
+    const ptr1 = passStringToWasm0(presets_json, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+    const len1 = WASM_VECTOR_LEN;
+    const ret = wasm.render_song_wav_with_presets(ptr0, len0, sample_rate, ptr1, len1);
+    if (ret[3]) {
+        throw takeFromExternrefTable0(ret[2]);
+    }
+    var v3 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+    wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+    return v3;
 }
 
 function __wbg_get_imports() {
