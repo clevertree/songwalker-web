@@ -44,10 +44,11 @@ track swing(kit) {
     track.instrument = kit
     track.duration = 1/4
 
+    // Eb3 = Ride Cymbal 1 (GM drum map)
     for (let i = 0; i < 4; i++) {
-        RideCymbal1 *0.4  /4
-        RideCymbal1 *0.3  /4
-        RideCymbal1 *0.4  /4
-        RideCymbal1 *0.3  /4
+        Eb3 *0.4  /4
+        Eb3 *0.3  /4
+        Eb3 *0.4  /4
+        Eb3 *0.3  /4
     }
 }
