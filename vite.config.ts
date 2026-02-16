@@ -4,6 +4,11 @@ import { resolve } from 'path';
 export default defineConfig({
     root: '.',
     publicDir: 'public',
+    define: {
+        'import.meta.env.VITE_LIBRARY_URL': JSON.stringify(
+            process.env.VITE_LIBRARY_URL || 'https://clevertree.github.io/songwalker-library'
+        ),
+    },
     build: {
         outDir: 'dist',
         target: 'es2022',

@@ -28,6 +28,7 @@ export class PresetBrowser {
     private loader: PresetLoader;
     private filteredEntries: PresetEntry[] = [];
     private onSelect: ((entry: PresetEntry) => void) | null = null;
+    private onPlay: ((entry: PresetEntry) => void) | null = null;
 
     private searchInput!: HTMLInputElement;
     private listEl!: HTMLElement;
@@ -58,6 +59,11 @@ export class PresetBrowser {
     /** Register a callback for when a preset entry is selected. */
     onPresetSelect(cb: (entry: PresetEntry) => void): void {
         this.onSelect = cb;
+    }
+
+    /** Register a callback for when a preset play button is clicked. */
+    onPresetPlay(cb: (entry: PresetEntry) => void): void {
+        this.onPlay = cb;
     }
 
     /** Toggle panel open/closed. */
@@ -181,11 +187,20 @@ export class PresetBrowser {
             const colour = CATEGORY_COLOURS[entry.category] ?? '#cdd6f4';
 
             item.innerHTML = `
+                <button class="pb-item-play" title="Preview preset">▶</button>
                 <span class="pb-item-dot" style="background:${colour}"></span>
                 <span class="pb-item-name">${escapeHtml(entry.name)}</span>
                 <span class="pb-item-meta">${entry.zoneCount ? entry.zoneCount + 'z' : entry.category}</span>
             `;
 
+            // Play button click
+            const playBtn = item.querySelector('.pb-item-play')!;
+            playBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                if (this.onPlay) this.onPlay(entry);
+            });
+
+            // Select preset (insert into editor)
             item.addEventListener('click', () => {
                 if (this.onSelect) this.onSelect(entry);
             });
@@ -382,6 +397,25 @@ export class PresetBrowser {
     font-size: 0.65rem;
     color: var(--subtext, #a6adc8);
     flex-shrink: 0;
+}
+.pb-item-play {
+    background: none;
+    border: none;
+    color: var(--accent, #89b4fa);
+    cursor: pointer;
+    font-size: 0.7rem;
+    padding: 2px 4px;
+    border-radius: 3px;
+    opacity: 0.6;
+    transition: opacity 0.15s, background 0.15s;
+}
+.pb-item-play:hover {
+    opacity: 1;
+    background: var(--border, #313244);
+}
+.pb-item.playing .pb-item-play {
+    color: #a6e3a1;
+    opacity: 1;
 }
 .pb-status {
     padding: 0.4rem 0.75rem;

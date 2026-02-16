@@ -626,18 +626,111 @@ async function main() {
     }
 
     // Preset browser
-    const presetLoader = new PresetLoader('https://clevertree.github.io/songwalker-library');
+    const presetLoader = new PresetLoader(import.meta.env.VITE_LIBRARY_URL);
     const editorWrapper = document.querySelector('.editor-wrapper') as HTMLElement;
     const presetBrowser = new PresetBrowser(editorWrapper, presetLoader);
+
+    /** Convert a preset name to a camelCase variable name. */
+    function toVariableName(name: string): string {
+        return name
+            .replace(/[^a-zA-Z0-9\s]/g, '') // remove non-alphanumeric except spaces
+            .trim()
+            .split(/\s+/)
+            .map((word, i) => i === 0 ? word.toLowerCase() : word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join('');
+    }
+
+    /** Get the loadPreset reference string from a preset entry path. */
+    function getPresetRefString(entry: { path: string; name: string }): string {
+        // Path is like "instruments/piano/Acoustic_Grand_Piano/preset.json"
+        // We want "LibraryName/Preset Name" format
+        const libraryName = presetLoader.findLibraryForEntry(entry as any);
+        return libraryName ? `${libraryName}/${entry.name}` : entry.name;
+    }
+
     presetBrowser.onPresetSelect((entry) => {
-        // Insert a loadPreset comment/reference at cursor
-        const position = editor.getPosition();
-        if (position) {
-            const text = `// Preset: ${entry.name} (${entry.path})\n`;
+        // Insert loadPreset code at the top of the file
+        const varName = toVariableName(entry.name);
+        const presetRef = getPresetRefString(entry);
+        const code = `const ${varName} = loadPreset("${presetRef}");\n`;
+
+        const model = editor.getModel();
+        if (model) {
+            // Insert at line 1
             editor.executeEdits('preset-browser', [{
-                range: new monaco.Range(position.lineNumber, 1, position.lineNumber, 1),
-                text,
+                range: new monaco.Range(1, 1, 1, 1),
+                text: code,
             }]);
+            // Move cursor after the inserted line
+            editor.setPosition({ lineNumber: 2, column: 1 });
+        }
+    });
+
+    // Preview preset playback
+    presetBrowser.onPresetPlay(async (entry) => {
+        try {
+            showStatusWarning(`Loading ${entry.name}…`);
+
+            // Ensure the preset loader has an AudioContext for decoding
+            if (!presetLoader.getAudioContext()) {
+                const ctx = new AudioContext({ sampleRate: 44100 });
+                presetLoader.setAudioContext(ctx);
+            }
+
+            // Load and build preset data
+            const presetRef = getPresetRefString(entry);
+            const preset = await presetLoader.loadPreset(presetRef);
+            let presetsJson: string | undefined;
+
+            if (preset.node?.type === 'sampler' && preset.node.config) {
+                const samplerConfig = preset.node.config;
+                const libraryName = presetLoader.findLibraryForEntry(entry);
+                const presetUrl = presetLoader.resolvePresetUrl(entry.path, libraryName);
+
+                // Decode all zones
+                const decodedZones = await presetLoader.decodeSamplerZones(
+                    samplerConfig,
+                    presetUrl,
+                );
+
+                const zones: any[] = [];
+                for (const zone of samplerConfig.zones) {
+                    const audioBuffer = decodedZones.get(zone);
+                    if (!audioBuffer) continue;
+
+                    const channelData = audioBuffer.getChannelData(0);
+                    zones.push({
+                        keyRangeLow: zone.keyRange?.low ?? 0,
+                        keyRangeHigh: zone.keyRange?.high ?? 127,
+                        rootNote: zone.pitch.rootNote,
+                        fineTuneCents: zone.pitch.fineTuneCents,
+                        sampleRate: zone.sampleRate,
+                        loopStart: zone.loopPoints?.start ?? null,
+                        loopEnd: zone.loopPoints?.end ?? null,
+                        samples: Array.from(channelData),
+                    });
+                }
+
+                presetsJson = JSON.stringify([{
+                    name: presetRef,
+                    isDrumKit: samplerConfig.oneShot ?? false,
+                    zones,
+                }]);
+            }
+
+            // Play a simple preview melody
+            const previewSource = `
+const inst = loadPreset("${presetRef}");
+track.beatsPerMinute = 120;
+track.instrument = inst;
+track.noteLength = 1/4;
+C4 E4 G4 C5 /2
+`;
+            showStatusWarning(`Playing preview…`);
+            await player.playSource(previewSource.trim(), presetsJson);
+            visualiser.start();
+        } catch (err) {
+            showStatusError(`Preview failed: ${err}`);
         }
     });
 
@@ -659,7 +752,7 @@ async function main() {
                     showStatusWarning(`Loading ${presetRefs.length} preset(s)…`);
 
                     // Ensure the preset loader has an AudioContext for decoding
-                    if (!presetLoader.hasAudioContext) {
+                    if (!presetLoader.getAudioContext()) {
                         const ctx = new AudioContext({ sampleRate: 44100 });
                         presetLoader.setAudioContext(ctx);
                     }

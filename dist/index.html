@@ -14,6 +14,7 @@
     <meta property="og:url" content="https://songwalker.net">
     <meta property="og:type" content="website">
     <link rel="canonical" href="https://songwalker.net">
+    <link rel="icon" type="image/x-icon" href="/icon.ico">
     <style>
         :root {
             --bg: #1e1e2e;
@@ -446,7 +447,7 @@
             }
         }
     </style>
-  <script type="module" crossorigin src="/assets/main-DwM5RdOr.js"></script>
+  <script type="module" crossorigin src="/assets/main-D2ynysUI.js"></script>
   <link rel="modulepreload" crossorigin href="/assets/monaco-editor-DrfwNogv.js">
   <link rel="stylesheet" crossorigin href="/assets/monaco-editor-Ck3IbhyB.css">
 </head>
@@ -497,43 +498,43 @@
     </div>
 
     <div class="editor-wrapper">
-      <div class="editor-main">
-        <div id="editor-container"></div>
-        <div class="viz-panel">
-            <div class="viz-section">
-                <div class="viz-label">Peak</div>
-                <div class="peak-meter">
-                    <div class="peak-bar-track">
-                        <div id="peak-bar-l" class="peak-bar" style="height: 1px;"></div>
+        <div class="editor-main">
+            <div id="editor-container"></div>
+            <div class="viz-panel">
+                <div class="viz-section">
+                    <div class="viz-label">Peak</div>
+                    <div class="peak-meter">
+                        <div class="peak-bar-track">
+                            <div id="peak-bar-l" class="peak-bar" style="height: 1px;"></div>
+                        </div>
+                        <div class="peak-bar-track">
+                            <div id="peak-bar-r" class="peak-bar" style="height: 1px;"></div>
+                        </div>
                     </div>
-                    <div class="peak-bar-track">
-                        <div id="peak-bar-r" class="peak-bar" style="height: 1px;"></div>
+                    <div id="peak-value" class="peak-value">-∞ dB</div>
+                </div>
+                <div class="viz-section">
+                    <div class="viz-label">Spectrum</div>
+                    <canvas id="spectrum-canvas"></canvas>
+                </div>
+                <div class="viz-section">
+                    <div class="viz-label">Output</div>
+                    <div class="waveform-container">
+                        <canvas id="waveform-canvas"></canvas>
                     </div>
                 </div>
-                <div id="peak-value" class="peak-value">-∞ dB</div>
-            </div>
-            <div class="viz-section">
-                <div class="viz-label">Spectrum</div>
-                <canvas id="spectrum-canvas"></canvas>
-            </div>
-            <div class="viz-section">
-                <div class="viz-label">Output</div>
-                <div class="waveform-container">
-                    <canvas id="waveform-canvas"></canvas>
-                </div>
             </div>
         </div>
-      </div>
-      <div class="editor-statusbar">
-        <div class="status-left">
-            <span id="status-errors" class="status-errors"></span>
-            <span id="status-warnings" class="status-warnings"></span>
+        <div class="editor-statusbar">
+            <div class="status-left">
+                <span id="status-errors" class="status-errors"></span>
+                <span id="status-warnings" class="status-warnings"></span>
+            </div>
+            <span class="spacer"></span>
+            <div class="status-right">
+                <span id="status-version">loading…</span>
+            </div>
         </div>
-        <span class="spacer"></span>
-        <div class="status-right">
-            <span id="status-version">loading…</span>
-        </div>
-      </div>
     </div>
 
     <div class="about">
