@@ -17,6 +17,23 @@ export function compile_song(source) {
 }
 
 /**
+ * WASM-exposed: return the songwalker-core version string.
+ * @returns {string}
+ */
+export function core_version() {
+    let deferred1_0;
+    let deferred1_1;
+    try {
+        const ret = wasm.core_version();
+        deferred1_0 = ret[0];
+        deferred1_1 = ret[1];
+        return getStringFromWasm0(ret[0], ret[1]);
+    } finally {
+        wasm.__wbindgen_free(deferred1_0, deferred1_1, 1);
+    }
+}
+
+/**
  * WASM-exposed: compile and render `.sw` source to mono f32 samples.
  * Returns the raw audio buffer for AudioWorklet playback.
  * @param {string} source

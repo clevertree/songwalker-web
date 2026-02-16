@@ -1,4 +1,4 @@
-import init, { compile_song } from './wasm/songwalker_core.js';
+import init, { compile_song, core_version } from './wasm/songwalker_core.js';
 import { SongPlayer } from './player.js';
 import { PresetLoader } from './preset-loader.js';
 import { PresetBrowser } from './preset-browser.js';
@@ -523,6 +523,10 @@ class NoteHighlighter {
 
 async function main() {
     await init();
+
+    // Display core version from WASM
+    const versionEl = document.querySelector('.version');
+    if (versionEl) versionEl.textContent = `core v${core_version()}`;
 
     const player = new SongPlayer();
 

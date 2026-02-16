@@ -8,6 +8,11 @@
 export function compile_song(source: string): any;
 
 /**
+ * WASM-exposed: return the songwalker-core version string.
+ */
+export function core_version(): string;
+
+/**
  * WASM-exposed: compile and render `.sw` source to mono f32 samples.
  * Returns the raw audio buffer for AudioWorklet playback.
  */
@@ -23,6 +28,7 @@ export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembl
 export interface InitOutput {
     readonly memory: WebAssembly.Memory;
     readonly compile_song: (a: number, b: number) => [number, number, number];
+    readonly core_version: () => [number, number];
     readonly render_song_samples: (a: number, b: number, c: number) => [number, number, number, number];
     readonly render_song_wav: (a: number, b: number, c: number) => [number, number, number, number];
     readonly __wbindgen_malloc: (a: number, b: number) => number;
