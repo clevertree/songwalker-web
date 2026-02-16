@@ -1,7 +1,7 @@
 {
   "name": "songwalker_core",
   "type": "module",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "files": [
     "songwalker_core_bg.wasm",
     "songwalker_core.js",
