@@ -48,3 +48,15 @@ npm install
 npm run dev     # starts Vite dev server
 npm run build   # production build
 ```
+
+## GitHub Actions
+
+No CI workflows exist yet. If workflows are added, verify them after pushing:
+```bash
+cd /home/ari/dev/songwalker-web
+gh run list --limit 3                # check recent runs
+gh run watch <run-id>                # watch a running build
+gh run view <run-id> --log-failed    # inspect failures
+```
+
+Iterate on any failures until the workflow passes.
