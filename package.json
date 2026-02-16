@@ -14,6 +14,6 @@
     },
     "dependencies": {
         "monaco-editor": "^0.55.1",
-        "songwalker-js": "file:../songwalker-js"
+        "songwalker-js": "^0.1.0"
     }
 }
