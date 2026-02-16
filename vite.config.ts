@@ -31,5 +31,9 @@ export default defineConfig({
             'Cross-Origin-Opener-Policy': 'same-origin',
             'Cross-Origin-Embedder-Policy': 'require-corp',
         },
+        fs: {
+            // Allow serving files from symlinked songwalker-js (for npm link)
+            allow: ['..'],
+        },
     },
 });

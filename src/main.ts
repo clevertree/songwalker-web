@@ -520,7 +520,19 @@ class NoteHighlighter {
 // ── App ──────────────────────────────────────────────────
 
 async function main() {
-    await initWasm();
+    try {
+        await initWasm();
+    } catch (err) {
+        const msg = err instanceof WebAssembly.CompileError
+            ? `WASM failed to load — the .wasm file may be missing or corrupted. (${err.message})`
+            : `WASM initialization failed: ${err}`;
+        const statusErrorsEl = document.getElementById('status-errors');
+        if (statusErrorsEl) statusErrorsEl.textContent = msg;
+        const statusEl = document.getElementById('status');
+        if (statusEl) statusEl.textContent = 'WASM Error';
+        console.error('[SongWalker] WASM init failed:', err);
+        return; // can't continue without WASM
+    }
 
     // Display core version in the status bar (bottom right)
     const statusVersionEl = document.getElementById('status-version');
@@ -699,14 +711,15 @@ async function main() {
                     if (!audioBuffer) continue;
 
                     const channelData = audioBuffer.getChannelData(0);
+                    const loop = zone.loopPoints ?? zone.loop;
                     zones.push({
                         keyRangeLow: zone.keyRange?.low ?? 0,
                         keyRangeHigh: zone.keyRange?.high ?? 127,
                         rootNote: zone.pitch.rootNote,
                         fineTuneCents: zone.pitch.fineTuneCents,
                         sampleRate: zone.sampleRate,
-                        loopStart: zone.loopPoints?.start ?? null,
-                        loopEnd: zone.loopPoints?.end ?? null,
+                        loopStart: loop?.start ?? null,
+                        loopEnd: loop?.end ?? null,
                         samples: Array.from(channelData),
                     });
                 }
@@ -764,13 +777,9 @@ C4 E4 G4 C5 /2
                     const wasmPresets: any[] = [];
                     for (const refName of presetRefs) {
                         try {
-                            const preset = await presetLoader.loadPreset(refName);
+                            const { preset, presetUrl } = await presetLoader.loadPresetWithContext(refName);
                             if (preset.node?.type === 'sampler' && preset.node.config) {
                                 const samplerConfig = preset.node.config;
-                                // Find the preset entry and its URL for audio resolution
-                                const entry = presetLoader.search({ name: refName })[0];
-                                const libraryName = entry ? presetLoader.findLibraryForEntry(entry) : undefined;
-                                const presetUrl = entry ? presetLoader.resolvePresetUrl(entry.path, libraryName) : undefined;
 
                                 // Decode all zones and extract mono f32 PCM
                                 const decodedZones = await presetLoader.decodeSamplerZones(
@@ -785,14 +794,15 @@ C4 E4 G4 C5 /2
 
                                     // Extract mono f32 channel data
                                     const channelData = audioBuffer.getChannelData(0);
+                                    const loop = zone.loopPoints ?? zone.loop;
                                     zones.push({
                                         keyRangeLow: zone.keyRange?.low ?? 0,
                                         keyRangeHigh: zone.keyRange?.high ?? 127,
                                         rootNote: zone.pitch.rootNote,
                                         fineTuneCents: zone.pitch.fineTuneCents,
                                         sampleRate: zone.sampleRate,
-                                        loopStart: zone.loopPoints?.start ?? null,
-                                        loopEnd: zone.loopPoints?.end ?? null,
+                                        loopStart: loop?.start ?? null,
+                                        loopEnd: loop?.end ?? null,
                                         samples: Array.from(channelData),
                                     });
                                 }
@@ -827,6 +837,8 @@ C4 E4 G4 C5 /2
                 visualiser.drawWaveformOverview();
                 visualiser.start();
                 highlighter.start();
+            }).catch((err: any) => {
+                showStatusError(String(err));
             });
         } catch (e: any) {
             const msg = String(e);
