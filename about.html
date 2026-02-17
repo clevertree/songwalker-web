@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About — SongWalker</title>
+    <meta name="description"
+        content="SongWalker is a music programming language with a built-in synthesizer engine. Learn about features, roadmap, and community.">
+    <meta name="theme-color" content="#1e1e2e">
+    <meta property="og:title" content="About SongWalker">
+    <meta property="og:description" content="A music programming language with a built-in synthesizer engine.">
+    <meta property="og:url" content="https://songwalker.net/about.html">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://songwalker.net/about.html">
+    <link rel="icon" type="image/x-icon" href="/icon.ico">
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --surface: #181825;
+            --overlay: #11111b;
+            --text: #cdd6f4;
+            --subtext: #a6adc8;
+            --accent: #89b4fa;
+            --accent-hover: #74c7ec;
+            --border: #313244;
+            --green: #a6e3a1;
+            --mauve: #cba6f7;
+            --peach: #fab387;
+            --yellow: #f9e2af;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        header h1 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        header h1 a:hover { text-decoration: underline; }
+
+        header .subtitle {
+            font-size: 0.85rem;
+            color: var(--subtext);
+        }
+
+        .spacer { flex: 1; }
+
+        .nav-link {
+            color: var(--subtext);
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            background: var(--border);
+        }
+
+        .nav-link.active {
+            color: var(--accent);
+        }
+
+        main {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: var(--mauve);
+            margin-bottom: 0.5rem;
+        }
+
+        p {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--subtext);
+            margin-bottom: 1rem;
+        }
+
+        a { color: var(--accent); text-decoration: none; }
+        a:hover { text-decoration: underline; }
+
+        code {
+            font-family: var(--font-mono);
+            background: var(--surface);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            font-size: 0.85em;
+            color: var(--peach);
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature {
+            background: var(--surface);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .feature h3 {
+            margin-bottom: 0.4rem;
+        }
+
+        .feature p {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .coming-soon {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .coming-soon .item {
+            background: var(--surface);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px dashed var(--border);
+            position: relative;
+        }
+
+        .coming-soon .item h3 {
+            color: var(--yellow);
+        }
+
+        .coming-soon .item p {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.65rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.15rem 0.5rem;
+            border-radius: 10px;
+            background: var(--yellow);
+            color: var(--bg);
+            margin-left: 0.5rem;
+            vertical-align: middle;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .tech-tag {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.8rem;
+            color: var(--subtext);
+        }
+
+        .footer {
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--subtext);
+            opacity: 0.5;
+            text-align: center;
+        }
+
+        @media (max-width: 600px) {
+            header { padding: 0.75rem 1rem; }
+            main { padding: 1.5rem 1rem; }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/">SongWalker</a></h1>
+        <span class="subtitle">Music Programming Language</span>
+        <span class="spacer"></span>
+        <a href="/" class="nav-link">Editor</a>
+        <a href="/about.html" class="nav-link active">About</a>
+        <a href="/vsti.html" class="nav-link">VSTi</a>
+        <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener" class="nav-link">GitHub</a>
+    </header>
+
+    <main>
+        <div class="section">
+            <h2>What is SongWalker?</h2>
+            <p>
+                SongWalker is a music programming language designed around one idea:
+                <strong>writing music should feel like writing code.</strong>
+                Songs are plain text <code>.sw</code> files using minimalist music notation
+                combined with JavaScript-style control flow — loops, variables, tracks, and
+                function-like instrument loading.
+            </p>
+            <p>
+                The entire engine — lexer, parser, compiler, synthesizer, and sampler — is
+                written in Rust and runs in your browser via WebAssembly. There is no server
+                involved in audio rendering. What you write is what you hear, deterministically,
+                on every platform.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>Features</h2>
+            <div class="features">
+                <div class="feature">
+                    <h3>Minimalist Notation</h3>
+                    <p>Write notes like <code>C4 /4</code>, chords like <code>[C4 E4 G4]</code>,
+                    rests, durations, and dynamics with a clean, readable syntax inspired by
+                    traditional music notation.</p>
+                </div>
+                <div class="feature">
+                    <h3>Tracks &amp; Parallel Voices</h3>
+                    <p>Define named <code>track</code> blocks that play simultaneously.
+                    Each track can use its own instrument, tempo, and note sequence. Tracks
+                    are mixed automatically.</p>
+                </div>
+                <div class="feature">
+                    <h3>Loops &amp; Control Flow</h3>
+                    <p>Use <code>for</code> loops for repetition, variables for reusable patterns,
+                    and conditional logic. No copy-paste walls of notes.</p>
+                </div>
+                <div class="feature">
+                    <h3>Built-in Synthesizer</h3>
+                    <p>Oscillators (sine, saw, square, triangle), ADSR envelopes, filters,
+                    and a mixer — all running in Rust. No external audio dependencies.</p>
+                </div>
+                <div class="feature">
+                    <h3>Sampler Engine</h3>
+                    <p>Load SoundFont-style sampler presets with multi-zone key mapping,
+                    pitch shifting, loop points, and velocity layers. Presets are plain JSON.</p>
+                </div>
+                <div class="feature">
+                    <h3>Preset Library</h3>
+                    <p>Browse and audition instruments from a built-in preset library.
+                    Click to insert <code>loadPreset</code> calls directly into your code.</p>
+                </div>
+                <div class="feature">
+                    <h3>WAV Export</h3>
+                    <p>Render your song to a WAV file directly in the browser.
+                    The same engine powers the CLI for batch and offline rendering.</p>
+                </div>
+                <div class="feature">
+                    <h3>VST3 Plugin</h3>
+                    <p>Use <a href="/vsti.html">SongWalker VSTi</a> in your DAW.
+                    Same Rust engine, same presets — as a MIDI instrument plugin.</p>
+                </div>
+                <div class="feature">
+                    <h3>Rust + WASM</h3>
+                    <p>The compiler and DSP run entirely in Rust compiled to WebAssembly.
+                    Deterministic, fast, and cross-platform — browser, CLI, or plugin.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Related Projects</h2>
+            <p>
+                <a href="https://snesology.net" target="_blank" rel="noopener"><strong>SNESology</strong></a>
+                — a companion site featuring authentic Super Nintendo sound samples from classic SNES games,
+                powered by the SongWalker engine.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>Coming Soon <span class="badge">Roadmap</span></h2>
+            <div class="coming-soon">
+                <div class="item">
+                    <h3>Song Submission</h3>
+                    <p>Submit your <code>.sw</code> compositions to a public song library.
+                    Browse and remix songs from the community.</p>
+                </div>
+                <div class="item">
+                    <h3>Preset &amp; Sample Submission</h3>
+                    <p>Upload your own sampler presets and audio samples. Build and share
+                    custom instrument packs for others to use.</p>
+                </div>
+                <div class="item">
+                    <h3>LLM Integration</h3>
+                    <p>AI-assisted music composition — generate, extend, or rearrange
+                    SongWalker code with help from a language model.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Technology</h2>
+            <div class="tech-stack">
+                <span class="tech-tag">Rust</span>
+                <span class="tech-tag">WebAssembly</span>
+                <span class="tech-tag">TypeScript</span>
+                <span class="tech-tag">Monaco Editor</span>
+                <span class="tech-tag">Vite</span>
+                <span class="tech-tag">nih-plug (VST3)</span>
+            </div>
+            <p>
+                Source code:
+                <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener">songwalker-core</a> · 
+                <a href="https://github.com/clevertree/songwalker-js" target="_blank" rel="noopener">songwalker-js</a> · 
+                <a href="https://github.com/clevertree/songwalker-site" target="_blank" rel="noopener">songwalker-site</a> · 
+                <a href="https://github.com/clevertree/songwalker-vsti" target="_blank" rel="noopener">songwalker-vsti</a> · 
+                <a href="https://github.com/clevertree/songwalker-cli" target="_blank" rel="noopener">songwalker-cli</a>
+            </p>
+        </div>
+    </main>
+
+    <div class="footer">
+        <a href="https://songwalker.net">songwalker.net</a> &middot;
+        Built with Rust, WebAssembly &amp; Monaco Editor
+    </div>
+</body>
+
+</html>

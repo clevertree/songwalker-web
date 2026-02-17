@@ -49,6 +49,13 @@ npm run dev     # starts Vite dev server
 npm run build   # production build
 ```
 
+## Dependency Rules
+
+**Never commit `file:` references** in `package.json` to git. Local `file:../songwalker-js`
+references are for development only. Before committing, replace them with the published
+npm version (e.g., `"songwalker-js": "^0.1.4"`). `file:` paths break Vercel/GitHub/GitLab
+deployments because the sibling repo is not available in CI.
+
 ## GitHub Actions
 
 No CI workflows exist yet. If workflows are added, verify them after pushing:
