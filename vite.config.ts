@@ -9,6 +9,10 @@ export default defineConfig({
             process.env.VITE_LIBRARY_URL || 'https://clevertree.github.io/songwalker-library'
         ),
     },
+    optimizeDeps: {
+        // Don't pre-bundle songwalker-js — esbuild breaks the WASM import.meta.url resolution
+        exclude: ['songwalker-js'],
+    },
     build: {
         outDir: 'dist',
         target: 'es2022',

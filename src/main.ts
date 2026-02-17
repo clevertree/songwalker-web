@@ -1,4 +1,4 @@
-import { initWasm, compile_song, core_version, SongPlayer, PresetLoader } from 'songwalker-js';
+import { initWasm, compile_song, core_version, SongPlayer, PresetLoader, PresetBrowser } from 'songwalker-js';
 import {
     LANGUAGE_ID,
     languageConfig,
@@ -6,10 +6,7 @@ import {
     editorTheme,
     completionItems,
 } from 'songwalker-js/monaco';
-import { PresetBrowser } from './preset-browser.js';
 import * as monaco from 'monaco-editor';
-
-// ── Types ────────────────────────────────────────────────
 
 interface NoteEvent {
     time: number;
@@ -735,9 +732,12 @@ async function main() {
             const previewSource = `
 const inst = loadPreset("${presetRef}");
 track.beatsPerMinute = 120;
-track.instrument = inst;
-track.noteLength = 1/4;
-C4 E4 G4 C5 /2
+preview(inst);
+track preview(inst) {
+    track.instrument = inst;
+    track.noteLength = 1/4;
+    C4 E4 G4 C5 /2
+}
 `;
             showStatusWarning(`Playing preview…`);
             await player.playSource(previewSource.trim(), presetsJson);
