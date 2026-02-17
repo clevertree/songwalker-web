@@ -1,4 +1,4 @@
-import { initWasm, compile_song, core_version, SongPlayer, PresetLoader, PresetBrowser } from 'songwalker-js';
+import { initWasm, compile_song, core_version, SongPlayer, PresetLoader, PresetBrowser, setupFullscreen } from 'songwalker-js';
 import {
     LANGUAGE_ID,
     languageConfig,
@@ -596,12 +596,14 @@ async function main() {
     const openBtn = document.getElementById('open-btn')!;
     const saveBtn = document.getElementById('save-btn')!;
     const exportBtn = document.getElementById('export-btn')!;
-    const fullscreenBtn = document.getElementById('fullscreen-btn')!;
     const presetBtn = document.getElementById('preset-btn')!;
     const songSelect = document.getElementById('song-select') as HTMLSelectElement;
     const statusEl = document.getElementById('status')!;
     const statusErrorsEl = document.getElementById('status-errors')!;
     const statusWarningsEl = document.getElementById('status-warnings')!;
+
+    // Fullscreen toggle (shared component)
+    setupFullscreen(editor);
 
     /** Clear all status bar errors/warnings and Monaco markers. */
     function clearStatusErrors() {
@@ -694,7 +696,7 @@ async function main() {
             if (preset.node?.type === 'sampler' && preset.node.config) {
                 const samplerConfig = preset.node.config;
                 const libraryName = presetLoader.findLibraryForEntry(entry);
-                const presetUrl = presetLoader.resolvePresetUrl(entry.path, libraryName);
+                const presetUrl = presetLoader.resolvePresetUrl(entry.path, libraryName, entry);
 
                 // Decode all zones
                 const decodedZones = await presetLoader.decodeSamplerZones(
@@ -904,11 +906,6 @@ track preview(inst) {
 
     exportBtn.addEventListener('click', exportWav);
 
-    fullscreenBtn.addEventListener('click', () => {
-        document.documentElement.classList.toggle('fullscreen');
-        setTimeout(() => editor.layout(), 100);
-    });
-
     presetBtn.addEventListener('click', () => {
         presetBrowser.toggle();
     });
@@ -919,18 +916,6 @@ track preview(inst) {
         label: 'Play Song',
         keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter],
         run: () => compileAndPlay(),
-    });
-
-    // Escape to exit fullscreen
-    editor.addAction({
-        id: 'songwalker.exitFullscreen',
-        label: 'Exit Fullscreen',
-        keybindings: [monaco.KeyCode.Escape],
-        precondition: undefined,
-        run: () => {
-            document.documentElement.classList.remove('fullscreen');
-            setTimeout(() => editor.layout(), 100);
-        },
     });
 
     // Display playback state + stop visualisers when done
