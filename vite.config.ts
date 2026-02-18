@@ -19,6 +19,8 @@ export default defineConfig({
         rollupOptions: {
             input: {
                 main: resolve(__dirname, 'index.html'),
+                about: resolve(__dirname, 'about.html'),
+                keyboard: resolve(__dirname, 'keyboard.html'),
                 vsti: resolve(__dirname, 'vsti.html'),
             },
             output: {
