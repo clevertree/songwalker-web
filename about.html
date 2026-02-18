@@ -31,7 +31,11 @@
             --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
         }
 
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -62,14 +66,18 @@
             text-decoration: none;
         }
 
-        header h1 a:hover { text-decoration: underline; }
+        header h1 a:hover {
+            text-decoration: underline;
+        }
 
         header .subtitle {
             font-size: 0.85rem;
             color: var(--subtext);
         }
 
-        .spacer { flex: 1; }
+        .spacer {
+            flex: 1;
+        }
 
         .nav-link {
             color: var(--subtext);
@@ -116,8 +124,14 @@
             margin-bottom: 1rem;
         }
 
-        a { color: var(--accent); text-decoration: none; }
-        a:hover { text-decoration: underline; }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
 
         code {
             font-family: var(--font-mono);
@@ -219,8 +233,13 @@
         }
 
         @media (max-width: 600px) {
-            header { padding: 0.75rem 1rem; }
-            main { padding: 1.5rem 1rem; }
+            header {
+                padding: 0.75rem 1rem;
+            }
+
+            main {
+                padding: 1.5rem 1rem;
+            }
         }
     </style>
 </head>
@@ -233,7 +252,8 @@
         <a href="/" class="nav-link">Editor</a>
         <a href="/about.html" class="nav-link active">About</a>
         <a href="/vsti.html" class="nav-link">VSTi</a>
-        <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener" class="nav-link">GitHub</a>
+        <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener"
+            class="nav-link">GitHub</a>
     </header>
 
     <main>
@@ -260,49 +280,49 @@
                 <div class="feature">
                     <h3>Minimalist Notation</h3>
                     <p>Write notes like <code>C4 /4</code>, chords like <code>[C4 E4 G4]</code>,
-                    rests, durations, and dynamics with a clean, readable syntax inspired by
-                    traditional music notation.</p>
+                        rests, durations, and dynamics with a clean, readable syntax inspired by
+                        traditional music notation.</p>
                 </div>
                 <div class="feature">
                     <h3>Tracks &amp; Parallel Voices</h3>
                     <p>Define named <code>track</code> blocks that play simultaneously.
-                    Each track can use its own instrument, tempo, and note sequence. Tracks
-                    are mixed automatically.</p>
+                        Each track can use its own instrument, tempo, and note sequence. Tracks
+                        are mixed automatically.</p>
                 </div>
                 <div class="feature">
                     <h3>Loops &amp; Control Flow</h3>
                     <p>Use <code>for</code> loops for repetition, variables for reusable patterns,
-                    and conditional logic. No copy-paste walls of notes.</p>
+                        and conditional logic. No copy-paste walls of notes.</p>
                 </div>
                 <div class="feature">
                     <h3>Built-in Synthesizer</h3>
                     <p>Oscillators (sine, saw, square, triangle), ADSR envelopes, filters,
-                    and a mixer — all running in Rust. No external audio dependencies.</p>
+                        and a mixer — all running in Rust. No external audio dependencies.</p>
                 </div>
                 <div class="feature">
                     <h3>Sampler Engine</h3>
                     <p>Load SoundFont-style sampler presets with multi-zone key mapping,
-                    pitch shifting, loop points, and velocity layers. Presets are plain JSON.</p>
+                        pitch shifting, loop points, and velocity layers. Presets are plain JSON.</p>
                 </div>
                 <div class="feature">
                     <h3>Preset Library</h3>
                     <p>Browse and audition instruments from a built-in preset library.
-                    Click to insert <code>loadPreset</code> calls directly into your code.</p>
+                        Click to insert <code>loadPreset</code> calls directly into your code.</p>
                 </div>
                 <div class="feature">
                     <h3>WAV Export</h3>
                     <p>Render your song to a WAV file directly in the browser.
-                    The same engine powers the CLI for batch and offline rendering.</p>
+                        The same engine powers the CLI for batch and offline rendering.</p>
                 </div>
                 <div class="feature">
                     <h3>VST3 Plugin</h3>
                     <p>Use <a href="/vsti.html">SongWalker VSTi</a> in your DAW.
-                    Same Rust engine, same presets — as a MIDI instrument plugin.</p>
+                        Same Rust engine, same presets — as a MIDI instrument plugin.</p>
                 </div>
                 <div class="feature">
                     <h3>Rust + WASM</h3>
                     <p>The compiler and DSP run entirely in Rust compiled to WebAssembly.
-                    Deterministic, fast, and cross-platform — browser, CLI, or plugin.</p>
+                        Deterministic, fast, and cross-platform — browser, CLI, or plugin.</p>
                 </div>
             </div>
         </div>
@@ -322,17 +342,17 @@
                 <div class="item">
                     <h3>Song Submission</h3>
                     <p>Submit your <code>.sw</code> compositions to a public song library.
-                    Browse and remix songs from the community.</p>
+                        Browse and remix songs from the community.</p>
                 </div>
                 <div class="item">
                     <h3>Preset &amp; Sample Submission</h3>
                     <p>Upload your own sampler presets and audio samples. Build and share
-                    custom instrument packs for others to use.</p>
+                        custom instrument packs for others to use.</p>
                 </div>
                 <div class="item">
                     <h3>LLM Integration</h3>
                     <p>AI-assisted music composition — generate, extend, or rearrange
-                    SongWalker code with help from a language model.</p>
+                        SongWalker code with help from a language model.</p>
                 </div>
             </div>
         </div>
@@ -349,10 +369,13 @@
             </div>
             <p>
                 Source code:
-                <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener">songwalker-core</a> · 
-                <a href="https://github.com/clevertree/songwalker-js" target="_blank" rel="noopener">songwalker-js</a> · 
-                <a href="https://github.com/clevertree/songwalker-site" target="_blank" rel="noopener">songwalker-site</a> · 
-                <a href="https://github.com/clevertree/songwalker-vsti" target="_blank" rel="noopener">songwalker-vsti</a> · 
+                <a href="https://github.com/clevertree/songwalker-core" target="_blank"
+                    rel="noopener">songwalker-core</a> ·
+                <a href="https://github.com/clevertree/songwalker-js" target="_blank" rel="noopener">songwalker-js</a> ·
+                <a href="https://github.com/clevertree/songwalker-site" target="_blank"
+                    rel="noopener">songwalker-site</a> ·
+                <a href="https://github.com/clevertree/songwalker-vsti" target="_blank"
+                    rel="noopener">songwalker-vsti</a> ·
                 <a href="https://github.com/clevertree/songwalker-cli" target="_blank" rel="noopener">songwalker-cli</a>
             </p>
         </div>
