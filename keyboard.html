@@ -1,0 +1,536 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keyboard Prototype — SongWalker</title>
+    <meta name="description"
+        content="SongWalker Keyboard — a performance-grade hardware synthesizer running the SongWalker Rust engine on embedded hardware. Open to community suggestions.">
+    <meta name="theme-color" content="#1e1e2e">
+    <meta property="og:title" content="Keyboard Prototype — SongWalker">
+    <meta property="og:description"
+        content="A hardware keyboard instrument running the SongWalker Rust DSP engine on Daisy-class embedded hardware. We're open to suggestions.">
+    <meta property="og:url" content="https://songwalker.net/keyboard.html">
+    <meta property="og:image" content="https://songwalker.net/keyboard-prototype.png">
+    <meta property="og:type" content="website">
+    <link rel="canonical" href="https://songwalker.net/keyboard.html">
+    <link rel="icon" type="image/x-icon" href="/icon.ico">
+    <style>
+        :root {
+            --bg: #1e1e2e;
+            --surface: #181825;
+            --overlay: #11111b;
+            --text: #cdd6f4;
+            --subtext: #a6adc8;
+            --accent: #89b4fa;
+            --accent-hover: #74c7ec;
+            --border: #313244;
+            --green: #a6e3a1;
+            --mauve: #cba6f7;
+            --peach: #fab387;
+            --yellow: #f9e2af;
+            --teal: #94e2d5;
+            --font-mono: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', 'Consolas', monospace;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 1rem 2rem;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        header h1 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--accent);
+            letter-spacing: -0.02em;
+        }
+
+        header h1 a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        header h1 a:hover {
+            text-decoration: underline;
+        }
+
+        header .subtitle {
+            font-size: 0.85rem;
+            color: var(--subtext);
+        }
+
+        .spacer {
+            flex: 1;
+        }
+
+        .nav-link {
+            color: var(--subtext);
+            text-decoration: none;
+            font-size: 0.85rem;
+            padding: 0.3rem 0.6rem;
+            border-radius: 4px;
+            transition: all 0.15s ease;
+        }
+
+        .nav-link:hover {
+            color: var(--text);
+            background: var(--border);
+        }
+
+        .nav-link.active {
+            color: var(--accent);
+        }
+
+        main {
+            flex: 1;
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 2.5rem 2rem;
+            width: 100%;
+        }
+
+        h2 {
+            font-size: 1.5rem;
+            color: var(--accent);
+            margin-bottom: 1rem;
+        }
+
+        h3 {
+            font-size: 1.1rem;
+            color: var(--mauve);
+            margin-bottom: 0.5rem;
+        }
+
+        p, li {
+            font-size: 0.95rem;
+            line-height: 1.7;
+            color: var(--subtext);
+        }
+
+        p {
+            margin-bottom: 1rem;
+        }
+
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        code {
+            font-family: var(--font-mono);
+            background: var(--surface);
+            padding: 0.15em 0.4em;
+            border-radius: 3px;
+            font-size: 0.85em;
+            color: var(--peach);
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        .hero-img {
+            width: 100%;
+            max-width: 800px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+            margin: 1.5rem 0;
+        }
+
+        .features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.25rem;
+            margin: 1.5rem 0;
+        }
+
+        .feature {
+            background: var(--surface);
+            padding: 1.25rem;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .feature h3 {
+            margin-bottom: 0.4rem;
+        }
+
+        .feature p {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .roadmap {
+            margin: 1.5rem 0;
+        }
+
+        .roadmap-step {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 1.25rem;
+            margin-bottom: 1rem;
+            position: relative;
+            padding-left: 3.5rem;
+        }
+
+        .roadmap-step::before {
+            content: attr(data-step);
+            position: absolute;
+            left: 1rem;
+            top: 1.25rem;
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: var(--accent);
+            font-family: var(--font-mono);
+        }
+
+        .roadmap-step h3 {
+            color: var(--teal);
+            margin-bottom: 0.3rem;
+        }
+
+        .roadmap-step p {
+            font-size: 0.85rem;
+            margin-bottom: 0;
+        }
+
+        .callout {
+            background: var(--surface);
+            border: 1px dashed var(--yellow);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .callout h3 {
+            color: var(--yellow);
+            margin-bottom: 0.5rem;
+        }
+
+        .callout p {
+            font-size: 0.9rem;
+            margin-bottom: 0;
+        }
+
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .tech-tag {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 0.3rem 0.75rem;
+            font-size: 0.8rem;
+            color: var(--subtext);
+        }
+
+        ul {
+            margin: 0.5rem 0 1rem 1.5rem;
+        }
+
+        li {
+            margin-bottom: 0.4rem;
+        }
+
+        .targets-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+            font-size: 0.85rem;
+        }
+
+        .targets-table th,
+        .targets-table td {
+            padding: 0.6rem 0.8rem;
+            border: 1px solid var(--border);
+            text-align: left;
+        }
+
+        .targets-table th {
+            background: var(--surface);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .targets-table td {
+            color: var(--subtext);
+        }
+
+        .footer {
+            padding: 1rem 2rem;
+            border-top: 1px solid var(--border);
+            font-size: 0.75rem;
+            color: var(--subtext);
+            opacity: 0.5;
+            text-align: center;
+        }
+
+        .footer a {
+            color: var(--subtext);
+        }
+
+        @media (max-width: 600px) {
+            header {
+                padding: 0.75rem 1rem;
+                flex-wrap: wrap;
+            }
+
+            main {
+                padding: 1.5rem 1rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1><a href="/">SongWalker</a></h1>
+        <span class="subtitle">Keyboard Prototype</span>
+        <span class="spacer"></span>
+        <a href="/" class="nav-link">Editor</a>
+        <a href="/about.html" class="nav-link">About</a>
+        <a href="/vsti.html" class="nav-link">VSTi</a>
+        <a href="/keyboard.html" class="nav-link active">Keyboard</a>
+        <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener"
+            class="nav-link">GitHub</a>
+    </header>
+
+    <main>
+        <div class="section">
+            <h2>Keyboard Prototype</h2>
+            <p>
+                We're building a <strong>performance-grade hardware keyboard instrument</strong> running
+                the SongWalker synthesis engine in Rust on embedded hardware. The goal is an instrument
+                that boots instantly, never crashes on stage, and delivers deterministic, glitch-free audio.
+            </p>
+            <img src="/keyboard-prototype.png" alt="SongWalker Keyboard Prototype Concept" class="hero-img">
+        </div>
+
+        <div class="section">
+            <h2>Why Hardware?</h2>
+            <p>
+                SongWalker already runs as a <a href="/">web editor</a>, a
+                <a href="/vsti.html">VST3 plugin</a>, and a CLI tool — all powered by the same Rust
+                engine. A hardware keyboard is the natural next step: an instrument that doesn't
+                depend on a laptop, doesn't have OS update interruptions, and boots to sound-ready
+                in under a second.
+            </p>
+            <div class="features">
+                <div class="feature">
+                    <h3>Instant Boot</h3>
+                    <p>Sub-second cold start. Sound-ready before you finish reaching for the volume knob.
+                        No OS, no loading screens.</p>
+                </div>
+                <div class="feature">
+                    <h3>Stage Stable</h3>
+                    <p>No OS crashes, no forced updates mid-performance. Embedded firmware with
+                        watchdog timer and safe-mode fallback.</p>
+                </div>
+                <div class="feature">
+                    <h3>Deterministic Audio</h3>
+                    <p>Hard real-time audio callback via DMA. No glitching even under heavy UI load —
+                        if using split-brain architecture, the UI can crash without affecting sound.</p>
+                </div>
+                <div class="feature">
+                    <h3>Same Engine, New Form</h3>
+                    <p>The same Rust DSP code that powers the browser editor and VSTi plugin — oscillators,
+                        sampler, effects, mixer — compiled to embedded firmware.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Recommended Platform: Daisy + Rust</h2>
+            <p>
+                Our recommended approach is <strong>Rust on Electro-Smith Daisy</strong> hardware
+                (STM32H750, ARM Cortex-M7 @ 480 MHz). The Cortex-M7 has a double-precision FPU, which
+                means the existing <code>f64</code> DSP code in <code>songwalker-core</code> can run
+                <em>without</em> rewriting to <code>f32</code> for the initial port. This dramatically
+                reduces porting effort.
+            </p>
+            <div class="tech-stack">
+                <span class="tech-tag">Rust (no_std)</span>
+                <span class="tech-tag">STM32H750 (Cortex-M7)</span>
+                <span class="tech-tag">Electro-Smith Daisy</span>
+                <span class="tech-tag">64 MB SDRAM</span>
+                <span class="tech-tag">8 MB QSPI Flash</span>
+                <span class="tech-tag">24-bit Audio Codec</span>
+                <span class="tech-tag">USB-MIDI</span>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Existing Engine Capabilities</h2>
+            <p>
+                The <a href="https://github.com/clevertree/songwalker-core" target="_blank"
+                    rel="noopener">songwalker-core</a> Rust crate already provides a full synthesis
+                pipeline. Many modules are algorithmically portable to embedded as-is:
+            </p>
+            <div class="features">
+                <div class="feature">
+                    <h3>Oscillators</h3>
+                    <p>PolyBLEP anti-aliased sine, sawtooth, square, and triangle waveforms
+                        with detune support.</p>
+                </div>
+                <div class="feature">
+                    <h3>Sampler</h3>
+                    <p>Multi-zone sample playback with pitch shifting, loop points, linear
+                        interpolation, and velocity scaling.</p>
+                </div>
+                <div class="feature">
+                    <h3>Effects Chain</h3>
+                    <p>Chorus, stereo delay, Freeverb reverb, and dynamics compressor — applied
+                        as a master chain.</p>
+                </div>
+                <div class="feature">
+                    <h3>Voice Engine</h3>
+                    <p>Up to 64 simultaneous voices with ADSR envelopes, event-driven scheduling,
+                        and 128-sample block processing.</p>
+                </div>
+                <div class="feature">
+                    <h3>Biquad Filter</h3>
+                    <p>Lowpass, highpass, bandpass, notch, and peaking EQ — Audio EQ Cookbook
+                        implementation.</p>
+                </div>
+                <div class="feature">
+                    <h3>Preset System</h3>
+                    <p>JSON-based instrument presets with multi-zone key mapping, velocity layers,
+                        and composite instruments (layer/split).</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Architecture: Split-Brain Design</h2>
+            <p>
+                The recommended architecture separates audio processing from UI rendering:
+            </p>
+            <ul>
+                <li><strong>Audio Brain (Daisy Seed):</strong> DSP engine, voice allocation, effects chain,
+                    MIDI handling, keybed scanning. Runs the hard real-time audio callback.</li>
+                <li><strong>UI Brain (ESP32-S3 or RP2040):</strong> Display rendering, preset browser,
+                    patch editor, meters. Connected via SPI with a compact binary protocol.</li>
+            </ul>
+            <p>
+                If the UI processor crashes or reboots, <strong>audio continues uninterrupted</strong>.
+                For the initial prototype (v0), a single Daisy Seed with a small OLED display is sufficient.
+            </p>
+        </div>
+
+        <div class="section">
+            <h2>All SongWalker Targets</h2>
+            <p>The firmware keyboard joins the existing family of deployment targets — all sharing the same Rust core:</p>
+            <table class="targets-table">
+                <thead>
+                    <tr>
+                        <th>Target</th>
+                        <th>Platform</th>
+                        <th>Audio Path</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Web Editor</td>
+                        <td>Browser (WASM)</td>
+                        <td>WebAudio API</td>
+                        <td>Live</td>
+                    </tr>
+                    <tr>
+                        <td>VSTi Plugin</td>
+                        <td>Desktop (nih-plug)</td>
+                        <td>DAW audio callback</td>
+                        <td>Live</td>
+                    </tr>
+                    <tr>
+                        <td>CLI Renderer</td>
+                        <td>Desktop (native)</td>
+                        <td>Offline WAV file</td>
+                        <td>Live</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Hardware Keyboard</strong></td>
+                        <td><strong>Daisy (Cortex-M7)</strong></td>
+                        <td><strong>DMA → codec</strong></td>
+                        <td><strong>Planned</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="section">
+            <h2>Prototype Roadmap</h2>
+            <div class="roadmap">
+                <div class="roadmap-step" data-step="v0">
+                    <h3>Prove Rust DSP on Daisy (4–6 weeks)</h3>
+                    <p>Port oscillators, envelopes, voice engine, sampler, and effects to a Daisy Seed dev board.
+                        Validate polyphony, latency (&lt; 3 ms), and stability over 48-hour soak tests.
+                        Use an off-the-shelf MIDI controller for note input.</p>
+                </div>
+                <div class="roadmap-step" data-step="v1">
+                    <h3>Keyboard Form Factor (8–12 weeks)</h3>
+                    <p>Integrate an OEM keybed (25/37 keys), add a split-brain UI processor with
+                        color TFT, custom carrier PCB, and 3D-printed enclosure. Implement .sw
+                        file playback via the streaming SongRunner.</p>
+                </div>
+                <div class="roadmap-step" data-step="v2">
+                    <h3>Founder Prototype Run (12–16 weeks)</h3>
+                    <p>Small batch (20–50 units) for early contributors. Refined enclosure,
+                        repeatable assembly, firmware update via USB drag-and-drop, and
+                        documentation. Targeting Crowd Supply or Kickstarter.</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="callout">
+            <h3>We're Open to Suggestions</h3>
+            <p>
+                This plan is a living document and we'd love your input. What key count
+                (25/37/49/61)? Knobs-first or touchscreen? MIDI DIN, USB, or both?
+                What features matter most for a performance instrument?
+                <br><br>
+                Open an issue or start a discussion on
+                <a href="https://github.com/clevertree/songwalker-core/issues" target="_blank"
+                    rel="noopener">GitHub</a> — we're actively shaping this based on community feedback.
+                The full technical plan is available in the
+                <a href="https://github.com/clevertree/songwalker-core/blob/main/docs/planned_keyboard_prototype.md"
+                    target="_blank" rel="noopener">docs</a>.
+            </p>
+        </div>
+    </main>
+
+    <div class="footer">
+        <a href="https://songwalker.net">songwalker.net</a> &middot;
+        Built with Rust, WebAssembly &amp; Monaco Editor
+    </div>
+</body>
+
+</html>
