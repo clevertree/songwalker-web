@@ -199,6 +199,82 @@
             padding: 0;
             min-height: 0;
             overflow: hidden;
+            position: relative;
+        }
+
+        /* --- Piano Keyboard Styles --- */
+        .piano-container {
+            background: #11111b;
+            border-top: 1px solid var(--border);
+            height: 100px;
+            width: 100%;
+            overflow-x: auto;
+            overflow-y: hidden;
+            user-select: none;
+            position: relative;
+            scrollbar-width: thin;
+            scrollbar-color: var(--border) transparent;
+        }
+
+        .piano-keys {
+            display: flex;
+            height: 100%;
+            padding: 0 1rem;
+            min-width: fit-content;
+        }
+
+        .piano-key {
+            position: relative;
+            flex-shrink: 0;
+            width: 32px;
+            height: 100%;
+            background: #e6e9ef;
+            border: 1px solid #313244;
+            border-bottom-left-radius: 4px;
+            border-bottom-right-radius: 4px;
+            cursor: pointer;
+            z-index: 1;
+        }
+
+        .piano-key.black {
+            width: 20px;
+            height: 60%;
+            background: #11111b;
+            margin-left: -10px;
+            margin-right: -10px;
+            z-index: 2;
+        }
+
+        .piano-key:hover {
+            background: #b4befe;
+        }
+
+        .piano-key.black:hover {
+            background: #45475a;
+        }
+
+        .piano-key.active {
+            background: var(--accent) !important;
+        }
+
+        .piano-key.black.active {
+            background: var(--accent) !important;
+        }
+
+        .piano-label {
+            position: absolute;
+            bottom: 4px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            font-size: 9px;
+            color: #11111b;
+            font-weight: bold;
+            pointer-events: none;
+        }
+
+        .piano-key.black .piano-label {
+            color: #cdd6f4;
         }
 
         .editor-main {
@@ -480,7 +556,8 @@
         <a href="/about.html" class="nav-link">About</a>
         <a href="/vsti.html" class="nav-link">VSTi</a>
         <a href="/keyboard.html" class="nav-link">Keyboard</a>
-        <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener" class="nav-link">GitHub</a>
+        <a href="https://github.com/clevertree/songwalker-core" target="_blank" rel="noopener"
+            class="nav-link">GitHub</a>
         <a href="https://github.com/sponsors/clevertree" target="_blank" rel="noopener" class="heart-link">♥ Sponsor</a>
     </header>
 
@@ -542,6 +619,13 @@
                 </div>
             </div>
         </div>
+        <!-- Piano Keyboard -->
+        <div id="piano" class="piano-container">
+            <div id="piano-keys" class="piano-keys">
+                <!-- Keys generated via JS -->
+            </div>
+        </div>
+
         <div class="editor-statusbar">
             <div class="status-left">
                 <span id="status-errors" class="status-errors"></span>

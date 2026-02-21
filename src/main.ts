@@ -1,4 +1,4 @@
-import { initWasm, compile_song, core_version, SongPlayer, PresetLoader, PresetBrowser, setupFullscreen } from 'songwalker-js';
+import { initWasm, compile_song, core_version, SongPlayer, PresetLoader, PresetBrowser, setupFullscreen, get_instrument_at_cursor } from 'songwalker-js';
 import {
     LANGUAGE_ID,
     languageConfig,
@@ -211,7 +211,132 @@ function registerLanguage() {
     });
 }
 
-// ── Visualiser helpers ───────────────────────────────────
+// ── Piano MIDI Keyboard ──────────────────────────────────
+
+function setupPiano(editor: monaco.editor.IStandaloneCodeEditor, player: SongPlayer, presetBrowser: PresetBrowser) {
+    const pianoEl = document.getElementById('piano-keys')!;
+    const keys: HTMLElement[] = [];
+    const activeNotes = new Set<number>();
+    let lastMouseNote: number | null = null;
+    let isMouseDown = false;
+
+    const noteNames = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+
+    // Create 3 octaves (C3 to B5)
+    for (let octave = 3; octave <= 5; octave++) {
+        for (let i = 0; i < 12; i++) {
+            const midiNote = (octave + 1) * 12 + i;
+            const isBlack = [1, 3, 6, 8, 10].includes(i);
+            const key = document.createElement('div');
+            key.className = `piano-key${isBlack ? ' black' : ''}`;
+            key.dataset.note = midiNote.toString();
+
+            if (i === 0 || i === 5) { // Label C and F
+                const label = document.createElement('div');
+                label.className = 'piano-label';
+                label.textContent = `${noteNames[i]}${octave}`;
+                key.appendChild(label);
+            }
+
+            key.addEventListener('pointerdown', (e) => {
+                e.preventDefault();
+                key.setPointerCapture(e.pointerId);
+                isMouseDown = true;
+                handleNoteOn(midiNote);
+            });
+
+            key.addEventListener('pointerenter', () => {
+                if (isMouseDown) {
+                    handleNoteOn(midiNote);
+                }
+            });
+
+            key.addEventListener('pointerleave', () => {
+                if (isMouseDown) {
+                    handleNoteOff(midiNote);
+                }
+            });
+
+            key.addEventListener('pointerup', (e) => {
+                isMouseDown = false;
+                key.releasePointerCapture(e.pointerId);
+                handleNoteOff(midiNote);
+            });
+
+            pianoEl.appendChild(key);
+            keys[midiNote] = key;
+        }
+    }
+
+    async function handleNoteOn(note: number) {
+        if (activeNotes.has(note)) return;
+        activeNotes.add(note);
+        keys[note]?.classList.add('active');
+        lastMouseNote = note;
+
+        // Get instrument at cursor
+        const source = editor.getValue();
+        const offset = editor.getModel()?.getOffsetAt(editor.getPosition()!) || 0;
+
+        try {
+            const ctx = get_instrument_at_cursor(source, offset) as any;
+            if (ctx && ctx.instrument) {
+                const pitchName = getPitchName(note);
+                const instrumentJson = JSON.stringify(ctx.instrument);
+                const presetsJson = JSON.stringify(presetBrowser.getLoadedPresets());
+                console.log(`[Piano] NoteOn: note=${note} pitch=${pitchName} instrument=${ctx.instrument.type || 'unknown'}`);
+                player.playNote(pitchName, 100, instrumentJson, presetsJson);
+            } else {
+                console.log(`[Piano] NoteOn: note=${note} (no instrument at cursor)`);
+            }
+        } catch (e) {
+            console.warn('Failed to get instrument at cursor for preview:', e);
+        }
+    }
+
+    function handleNoteOff(note: number) {
+        activeNotes.delete(note);
+        keys[note]?.classList.remove('active');
+    }
+
+    function getPitchName(midiNote: number): string {
+        const name = noteNames[midiNote % 12];
+        const octave = Math.floor(midiNote / 12) - 1;
+        return `${name}${octave}`;
+    }
+
+    // Hardware MIDI input support
+    if (navigator.requestMIDIAccess) {
+        navigator.requestMIDIAccess().then((access) => {
+            console.log(`[MIDI] Access granted. Found ${access.inputs.size} inputs.`);
+            for (const input of access.inputs.values()) {
+                console.log(`[MIDI] Listening to input: ${input.name} [id=${input.id}]`);
+                input.onmidimessage = (e) => {
+                    const [status, note, velocity] = e.data;
+                    const type = status & 0xf0;
+                    // Note on (144) or Note off (128)
+                    if (type === 144 && velocity > 0) {
+                        handleNoteOn(note);
+                    } else if (type === 128 || (type === 144 && velocity === 0)) {
+                        handleNoteOff(note);
+                    }
+                };
+            }
+            // Listen for new devices
+            access.onstatechange = (e) => {
+                if (e.port.type === 'input' && e.port.state === 'connected') {
+                    console.log(`[MIDI] New device connected: ${e.port.name}`);
+                    (e.port as any).onmidimessage = (ev: any) => {
+                        const [status, note, velocity] = ev.data;
+                        const type = status & 0xf0;
+                        if (type === 144 && velocity > 0) handleNoteOn(note);
+                        else if (type === 128 || (type === 144 && velocity === 0)) handleNoteOff(note);
+                    };
+                }
+            };
+        }).catch(() => console.warn('MIDI access denied or not supported by browser.'));
+    }
+}
 
 class Visualiser {
     private peakBarL: HTMLElement;
@@ -328,7 +453,9 @@ class Visualiser {
     };
 
     private drawPeak(timeData: Uint8Array): void {
-        // Compute RMS from time-domain
+        const h = 48; // fixed height for visualizer area
+
+        // Compute RMS and true Peak from time-domain for L/R (approximate, since we only have single buffer)
         let sumSq = 0;
         let peak = 0;
         for (let i = 0; i < timeData.length; i++) {
@@ -338,104 +465,157 @@ class Visualiser {
             if (abs > peak) peak = abs;
         }
         const rms = Math.sqrt(sumSq / timeData.length);
+        const db = 20 * Math.log10(peak || 0.0001);
 
         // Map to percentage (0-100)
-        const rmsPct = Math.min(rms * 3 * 100, 100); // scale up for visibility
+        const rmsPct = Math.min(rms * 400, 100);
         const peakPct = Math.min(peak * 100, 100);
 
         this.peakBarL.style.height = `${rmsPct}%`;
         this.peakBarR.style.height = `${peakPct}%`;
 
-        // Colour coding
-        const setBarClass = (el: HTMLElement, pct: number) => {
-            el.className = pct > 95 ? 'peak-bar clip' : pct > 70 ? 'peak-bar hot' : 'peak-bar';
-        };
-        setBarClass(this.peakBarL, rmsPct);
-        setBarClass(this.peakBarR, peakPct);
+        // Clipping indicator (red borders)
+        if (peak > 0.99) {
+            this.peakBarL.style.background = '#f38ba8';
+            this.peakBarR.style.background = '#f38ba8';
+            this.peakValueEl.style.color = '#f38ba8';
+        } else {
+            this.peakBarL.style.background = '#a6e3a1';
+            this.peakBarR.style.background = '#a6e3a1';
+            this.peakValueEl.style.color = '#a6adc8';
+        }
+        this.peakValueEl.textContent = `${db.toFixed(1)} dB`;
 
-        // dB display
-        const db = peak > 0 ? 20 * Math.log10(peak) : -Infinity;
-        this.peakValueEl.textContent = isFinite(db) ? `${db.toFixed(1)} dB` : '-∞ dB';
+        this.drawOscilloscope(timeData);
     }
 
-    private drawSpectrum(freqData: Uint8Array): void {
-        const canvas = this.spectrumCanvas;
-        const ctx = this.spectrumCtx;
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        if (canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
-            canvas.width = rect.width * dpr;
-            canvas.height = rect.height * dpr;
-        }
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        const w = rect.width;
-        const h = rect.height;
+    private drawOscilloscope(timeData: Uint8Array): void {
+        const canvas = this.waveformCanvas;
+        const ctx = this.waveformCtx;
+        const w = canvas.width;
+        const h = canvas.height;
 
         ctx.fillStyle = '#11111b';
         ctx.fillRect(0, 0, w, h);
 
-        // Draw frequency bars (logarithmic scale, limited to useful range)
-        const barCount = Math.min(64, freqData.length);
-        const barWidth = w / barCount;
+        ctx.strokeStyle = '#313244';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(0, h / 2);
+        ctx.lineTo(w, h / 2);
+        ctx.stroke();
 
-        for (let i = 0; i < barCount; i++) {
-            // Map logarithmically
-            const logIndex = Math.floor(Math.pow(freqData.length, i / barCount));
-            const value = freqData[Math.min(logIndex, freqData.length - 1)] / 255;
-            const barHeight = value * h;
+        ctx.strokeStyle = '#89b4fa';
+        ctx.lineWidth = 1.5;
+        ctx.beginPath();
 
-            // Gradient colour from accent to peach
-            const hue = 200 + (i / barCount) * 40; // blue to teal
-            ctx.fillStyle = `hsl(${hue}, 70%, ${50 + value * 30}%)`;
-            ctx.fillRect(
-                i * barWidth + 0.5,
-                h - barHeight,
-                barWidth - 1,
-                barHeight,
-            );
+        const sliceWidth = w / timeData.length;
+        let x = 0;
+
+        for (let i = 0; i < timeData.length; i++) {
+            const v = timeData[i] / 128.0;
+            const y = v * h / 2.0;
+
+            if (i === 0) {
+                ctx.moveTo(x, y);
+            } else {
+                ctx.lineTo(x, y);
+            }
+
+            x += sliceWidth;
         }
+
+        ctx.lineTo(w, h / 2);
+        ctx.stroke();
+    }
+            el.className = pct > 95 ? 'peak-bar clip' : pct > 70 ? 'peak-bar hot' : 'peak-bar';
+};
+setBarClass(this.peakBarL, rmsPct);
+setBarClass(this.peakBarR, peakPct);
+
+// dB display
+const db = peak > 0 ? 20 * Math.log10(peak) : -Infinity;
+this.peakValueEl.textContent = isFinite(db) ? `${db.toFixed(1)} dB` : '-∞ dB';
+    }
+
+    private drawSpectrum(freqData: Uint8Array): void {
+    const canvas = this.spectrumCanvas;
+    const ctx = this.spectrumCtx;
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    if(canvas.width !== rect.width * dpr || canvas.height !== rect.height * dpr) {
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+}
+ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+const w = rect.width;
+const h = rect.height;
+
+ctx.fillStyle = '#11111b';
+ctx.fillRect(0, 0, w, h);
+
+// Draw frequency bars (logarithmic scale, limited to useful range)
+const barCount = Math.min(64, freqData.length);
+const barWidth = w / barCount;
+
+for (let i = 0; i < barCount; i++) {
+    // Map logarithmically
+    const logIndex = Math.floor(Math.pow(freqData.length, i / barCount));
+    const value = freqData[Math.min(logIndex, freqData.length - 1)] / 255;
+    const barHeight = value * h;
+
+    // Gradient colour from accent to peach
+    const hue = 200 + (i / barCount) * 40; // blue to teal
+    ctx.fillStyle = `hsl(${hue}, 70%, ${50 + value * 30}%)`;
+    ctx.fillRect(
+        i * barWidth + 0.5,
+        h - barHeight,
+        barWidth - 1,
+        barHeight,
+    );
+}
     }
 
     private drawPlayhead(): void {
-        const samples = this.player.renderedSamples;
-        if (!samples || samples.length === 0) return;
+    const samples = this.player.renderedSamples;
+    if(!samples || samples.length === 0) return;
 
-        const progress = this.player.getProgress();
-        if (progress <= 0) return;
+const progress = this.player.getProgress();
+if (progress <= 0) return;
 
-        const canvas = this.waveformCanvas;
-        const ctx = this.waveformCtx;
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        const w = rect.width;
-        const h = rect.height;
+const canvas = this.waveformCanvas;
+const ctx = this.waveformCtx;
+const dpr = window.devicePixelRatio || 1;
+const rect = canvas.getBoundingClientRect();
+const w = rect.width;
+const h = rect.height;
 
-        // Redraw waveform then overlay playhead
-        this.drawWaveformOverview();
+// Redraw waveform then overlay playhead
+this.drawWaveformOverview();
 
-        // Semi-transparent overlay on played portion
-        ctx.fillStyle = 'rgba(137, 180, 250, 0.08)';
-        ctx.fillRect(0, 0, w * progress, h);
+// Semi-transparent overlay on played portion
+ctx.fillStyle = 'rgba(137, 180, 250, 0.08)';
+ctx.fillRect(0, 0, w * progress, h);
 
-        // Playhead line
-        const x = w * progress;
-        ctx.strokeStyle = '#f5e0dc';
-        ctx.lineWidth = 1.5;
-        ctx.beginPath();
-        ctx.moveTo(x, 0);
-        ctx.lineTo(x, h);
-        ctx.stroke();
+// Playhead line
+const x = w * progress;
+ctx.strokeStyle = '#f5e0dc';
+ctx.lineWidth = 1.5;
+ctx.beginPath();
+ctx.moveTo(x, 0);
+ctx.lineTo(x, h);
+ctx.stroke();
     }
 
     private clearCanvas(ctx: CanvasRenderingContext2D, canvas: HTMLCanvasElement): void {
-        const dpr = window.devicePixelRatio || 1;
-        const rect = canvas.getBoundingClientRect();
-        canvas.width = rect.width * dpr;
-        canvas.height = rect.height * dpr;
-        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-        ctx.fillStyle = '#11111b';
-        ctx.fillRect(0, 0, rect.width, rect.height);
-    }
+    const dpr = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+    canvas.width = rect.width * dpr;
+    canvas.height = rect.height * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    ctx.fillStyle = '#11111b';
+    ctx.fillRect(0, 0, rect.width, rect.height);
+}
 }
 
 // ── Note highlighting ────────────────────────────────────
@@ -588,6 +768,7 @@ async function main() {
 
     // Create visualiser and highlighter
     const visualiser = new Visualiser(player);
+    setupPiano(editor, player, presetBrowser);
     const highlighter = new NoteHighlighter(editor, player);
 
     // UI elements
